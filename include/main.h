@@ -12,7 +12,11 @@ Created By:
 #ifndef GOLFHOOK_MAIN_H
 #define GOLFHOOK_MAIN_H
 
-void PreInit();
-void PostInit();
+#include <windef.h>
+#include <Aetherim/src/wrapper.hpp>
+
+extern std::unique_ptr<Wrapper> g_Aetherim;
+
+void Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
 
 #endif // GOLFHOOK_MAIN_H

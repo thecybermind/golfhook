@@ -1,0 +1,97 @@
+/*
+GolfHook - Golf With Your Friends Hook
+Copyright 2026
+https://github.com/thecybermind/golfhook/
+3-clause BSD license: https://opensource.org/license/bsd-3-clause
+
+Created By:
+    Kevin Masterson < k.m.masterson@gmail.com >
+
+*/
+
+#include <string>
+#include <cstdarg>
+#include "log.hpp"
+#include "format.hpp"
+
+namespace Log {
+
+    static AixLog::log_sink_ptr s_log_sink_file = nullptr;
+
+    static AixLog::Severity s_log_level = DEFAULT_SEVERITY;
+
+
+    bool log_level_match(int severity) {
+        return severity >= (int)s_log_level;
+    }
+
+
+    void log_init(std::string file, AixLog::Severity severity, bool append) {
+        if (append)
+            s_log_sink_file = std::make_shared<SinkFileAppend>(severity, file);
+        else
+            s_log_sink_file = std::make_shared<AixLog::SinkFile>(severity, file);
+
+        AixLog::Log::init({ s_log_sink_file });
+    }
+
+
+    int log_severity_from_name(std::string severity) {
+        return (int)AixLog::to_severity(severity, DEFAULT_SEVERITY);
+    }
+
+
+    std::string log_name_from_severity(int severity) {
+        return AixLog::to_string((AixLog::Severity)severity);
+    }
+
+
+    void log_set_severity(int severity) {
+        s_log_level = (AixLog::Severity)severity;
+        (*s_log_sink_file).filter.add_filter((AixLog::Severity)severity);
+    }
+
+
+#if 0
+    // actually in log.h, just here for visibility
+    template <typename T>
+    void log_add_sink(T func, AixLog::Severity level = AixLog::Severity::notice) {
+        AixLog::Log::instance().add_logsink<AixLog::SinkCallback>(level, func);
+    }
+#endif
+
+
+    std::string log_format(const AixLog::Metadata& metadata, const std::string& message, bool timestamp) {
+        std::string output = fmt::format("({}) {}\n", metadata.tag.text, message);
+        if ((int)metadata.severity >= GH_LOG_WARNING)
+            output = fmt::format("[{}] {}", AixLog::to_string(metadata.severity), output);
+        if (timestamp && metadata.timestamp)
+            output = fmt::format("{} {}", metadata.timestamp.to_string(), output);
+        return output;
+    }
+
+}   // namespace Log
+
+/**
+* @brief Varargs function so a C source file can log
+*
+* @param severity Log severity
+* @param tag Logtag to use
+* @param fmt Format string
+* @param ... Format arguments
+*/
+extern "C" void log_c(int severity, const char* tag, const char* fmt, ...) {
+    // exit early if neither log level (game console and log file) is met
+    if (!Log::log_level_match(severity))
+        return;
+
+    va_list argptr;
+    static char buf[1024];
+
+    va_start(argptr, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, argptr);
+    va_end(argptr);
+
+    // not GHLOG since we already checked log_level_match()
+    LOG(severity, tag) << buf << std::flush;
+}

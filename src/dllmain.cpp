@@ -21,6 +21,10 @@ Created By:
 
 #include "hook.h"
 #include "main.h"
+#include "config.hpp"
+#include "log.hpp"
+#include "format.hpp"
+#include "version.h"
 
 #define DLLEXPORT __declspec(dllexport)
 #ifdef __cplusplus
@@ -30,37 +34,35 @@ Created By:
 #endif
 
 static HMODULE hMe = nullptr;                   // this DLL handle
-static HMODULE hVersion = nullptr;              // real version.dll handle
 
-typedef FARPROC(*pfnGPA)(HMODULE, LPCSTR);
-static pfnGPA GetProcAddress_orig = nullptr;    // original GetProcAddress function pointer from binary's IAT
+C_DLLEXPORT int UnityMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+    const char* lpCmdLineA = GetCommandLineA();
+    GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain(\"" << lpCmdLineA << "\") called\n";
 
-typedef int (*pfnUnityMain)(HINSTANCE, HINSTANCE, LPWSTR, int);
-static pfnUnityMain UnityMain_orig = nullptr;   // original UnityMain function pointer from binary's IAT
+    // load original UnityPlayer.dll
+    static HMODULE hUnityPlayer = LoadLibraryA("UnityPlayer_orig.dll");
+    static int(*UnityMain_orig)(HINSTANCE, HINSTANCE, LPWSTR, int) = nullptr;
 
-// This hook is just to point any requests directed towards this DLL to the real version.dll instead.
-static FARPROC WINAPI GetProcAddress_hook(HMODULE hModule, LPCSTR lpProcName) {
-    // if trying to load a function in this DLL, redirect to the real version.dll
-    if (hModule == hMe) {
-        if (!hVersion)
-            hVersion = LoadLibraryA("c:\\windows\\system32\\version.dll");
-        // fail? who knows
-        if (!hVersion)
-            return nullptr;
-
-        return GetProcAddress_orig(hVersion, lpProcName);
+    if (!hUnityPlayer) {
+        GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load UnityPlayer_orig.dll! Shutting down.\n";
+        return -1;
     }
-    
-    // do the original call
-    return GetProcAddress_orig(hModule, lpProcName);
-}
 
+    if (!UnityMain_orig)
+        UnityMain_orig = (decltype(UnityMain_orig))GetProcAddress(hUnityPlayer, "UnityMain");
 
-// This hook is to actually get notified when UnityMain is called in UnityPlayer.dll.
-static int UnityMain_hook(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    PreInit();
+    if (!UnityMain_orig) {
+        GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load UnityMain from UnityPlayer_orig.dll! Shutting down.\n";
+        return -1;
+    }
+
+    Init(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+
+    // this function does not appear to actually return, even when exiting the game
     int ret = UnityMain_orig(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-    PostInit();
+
+    GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain(\"" << lpCmdLineA << "\") returning " << ret << "\n";
+
     return ret;
 }
 
@@ -69,39 +71,26 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
         hMe = hModule;
 
-        // install IAT hook for binary->kernel32.dll!GetProcAddress
-        GetProcAddress_orig = (pfnGPA)install_IAT_hook(GetModuleHandle(NULL), "kernel32.dll", "GetProcAddress", (FARPROC)GetProcAddress_hook);
+        Log::log_init("golfhook.log", Log::DEFAULT_SEVERITY, Log::DEFAULT_APPEND);
 
-        // install IAT hook for binary->UnityPlayer.dll!UnityMain
-        UnityMain_orig = (pfnUnityMain)install_IAT_hook(GetModuleHandle(NULL), "UnityPlayer.dll", "UnityMain", (FARPROC)UnityMain_hook);
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook v" GH_VERSION " (" GH_BUILD ") loaded!\n";
+
+        g_cfg = Config::cfg_load("golfhook.json");
+        if (!g_cfg.empty()) {
+            GHLOG(GH_LOG_INFO, GH_TAG) << "Config file found: \"golfhook.json\"\n";
+        }
+        else {
+            GHLOG(GH_LOG_INFO, GH_TAG) << "Config file not found.\n";
+        }
+
+        // update log level from config file
+        std::string cfg_loglevel = Config::cfg_get_string(g_cfg, "loglevel", "");
+        if (!cfg_loglevel.empty())
+            Log::log_set_severity(Log::log_severity_from_name(cfg_loglevel));
     }
     else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
-        // unregister hooks
-        (void)install_IAT_hook(GetModuleHandle(NULL), "kernel32.dll", "GetProcAddress", (FARPROC)GetProcAddress_orig);
-        (void)install_IAT_hook(GetModuleHandle(NULL), "UnityPlayer.dll", "UnityMain", (FARPROC)UnityMain_orig);
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook shutting down.\n";
     }
+
     return TRUE;
 }
-
-
-C_DLLEXPORT void WINAPI _stub_func() {
-    // do nothing.
-    // this is just used to fill out the required DLL exports and they should never actually get called
-}
-#pragma comment(linker,"/export:GetFileVersionInfoA=_stub_func,@1")
-#pragma comment(linker,"/export:GetFileVersionInfoByHandle=_stub_func,@2")
-#pragma comment(linker,"/export:GetFileVersionInfoExA=_stub_func,@3")
-#pragma comment(linker,"/export:GetFileVersionInfoExW=_stub_func,@4")
-#pragma comment(linker,"/export:GetFileVersionInfoSizeA=_stub_func,@5")//_GetFileVersionInfoSizeA,@5")
-#pragma comment(linker,"/export:GetFileVersionInfoSizeExA=_stub_func,@6")
-#pragma comment(linker,"/export:GetFileVersionInfoSizeExW=_stub_func,@7")
-#pragma comment(linker,"/export:GetFileVersionInfoSizeW=_stub_func,@8")
-#pragma comment(linker,"/export:GetFileVersionInfoW=_stub_func,@9")
-#pragma comment(linker,"/export:VerFindFileA=_stub_func,@10")
-#pragma comment(linker,"/export:VerFindFileW=_stub_func,@11")
-#pragma comment(linker,"/export:VerInstallFileA=_stub_func,@12")
-#pragma comment(linker,"/export:VerInstallFileW=_stub_func,@13")
-#pragma comment(linker,"/export:VerLanguageNameA=_stub_func,@14")
-#pragma comment(linker,"/export:VerLanguageNameW=_stub_func,@15")
-#pragma comment(linker,"/export:VerQueryValueA=_stub_func,@16")
-#pragma comment(linker,"/export:VerQueryValueW=_stub_func,@17")

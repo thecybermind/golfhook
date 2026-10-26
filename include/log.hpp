@@ -1,0 +1,144 @@
+/*
+GolfHook - Golf With Your Friends Hook
+Copyright 2026
+https://github.com/thecybermind/golfhook/
+3-clause BSD license: https://opensource.org/license/bsd-3-clause
+
+Created By:
+    Kevin Masterson < k.m.masterson@gmail.com >
+
+*/
+
+#ifndef GOLFHOOK_LOG_HPP
+#define GOLFHOOK_LOG_HPP
+
+#ifdef __cplusplus
+
+#include <aixlog/aixlog.hpp>
+#include <string>
+
+/**
+* @brief Log message.
+* 
+* If messages with given severity are not being logged to any sink, this entire log expression will not evaluate.
+*
+* @param severity Log severity
+* @param tag Log tag
+*/
+#define GHLOG(severity, tag) if (Log::log_level_match(severity)) LOG(severity, tag)
+
+#define GH_TAG "GOLFHOOK"
+
+enum {
+    GH_LOG_TRACE,              // Trace (lowest log level)
+    GH_LOG_DEBUG,              // Debug (above Trace, below Info)
+    GH_LOG_INFO,               // Info (above Debug, below Notice)
+    GH_LOG_NOTICE,             // Notice (above Info, below Warning)
+    GH_LOG_WARNING,            // Warning (above Notice, below Error)
+    GH_LOG_ERROR,              // Error (above Warning, below Fatal)
+    GH_LOG_FATAL               // Fatal (highest log level)
+};
+
+namespace Log {
+
+#ifdef _DEBUG
+    // Initial severity for log file
+    constexpr AixLog::Severity DEFAULT_SEVERITY = AixLog::Severity::debug;
+    constexpr bool DEFAULT_APPEND = true;
+#else
+    // Initial severity for log file
+    constexpr AixLog::Severity DEFAULT_SEVERITY = AixLog::Severity::info;
+    constexpr bool DEFAULT_APPEND = false;
+#endif
+
+    /**
+    * @brief Check if a message with given severity should be logged
+    *
+    * @param severity Log level to check
+    * @return true if at least one sink should output a log with the given severity, false otherwise
+    */
+    bool log_level_match(int severity);
+
+    /**
+    * @brief Initialize log file
+    *
+    * @param file Filename for log file
+    * @param severity Initial severity for log file
+    * @param append true if the log file should be appended-to after opening (not truncated), false otherwise
+    */
+    void log_init(std::string file, AixLog::Severity severity = DEFAULT_SEVERITY, bool append = DEFAULT_APPEND);
+
+    /**
+    * @brief Convert severity name to value
+    *
+    * @param severity Severity name to convert
+    * @return Severity value
+    */
+    int log_severity_from_name(std::string severity);
+
+    /**
+    * @brief Convert severity value to name
+    *
+    * @param severity Severity value to convert
+    * @return Severity name
+    */
+    std::string log_name_from_severity(int severity);
+
+    /**
+    * @brief Set severity of log file
+    *
+    * @param severity Severity name to set
+    */
+    void log_set_severity(int severity);
+
+    /**
+    * @brief Add new log sink
+    *
+    * @param func Function to execute when logging
+    * @param level Level to log
+    */
+    template <typename T>
+    void log_add_sink(T func, AixLog::Severity level = AixLog::Severity::notice) {
+        AixLog::Log::instance().add_logsink<AixLog::SinkCallback>(level, func);
+    }
+
+    /**
+    * @brief Format a log message for custom sink
+    *
+    * @param metadata Log entry metadata (severity, tag, timestamp, etc)
+    * @param message Log message
+    * @param timestamp Should we output timestamp?
+    * @return Formatted log message
+    */
+    std::string log_format(const AixLog::Metadata& metadata, const std::string& message, bool timestamp = true);
+
+    // Class like AixLog's SinkFile except it will not truncate the file on opening
+    struct SinkFileAppend : public AixLog::SinkFormat
+    {
+        SinkFileAppend(const SinkFileAppend&) = delete;
+        SinkFileAppend& operator=(const SinkFileAppend&) = delete;
+        SinkFileAppend(const AixLog::Filter& filter, const std::string& filename, const std::string& format = "%Y-%m-%d %H:%M:%S.#ms [#severity] (#tag_func)")
+            : SinkFormat(filter, format)
+        {
+            ofs.open(filename, std::ofstream::out | std::ios_base::app);
+        }
+
+        ~SinkFileAppend() override
+        {
+            ofs.close();
+        }
+
+        void log(const AixLog::Metadata& metadata, const std::string& message) override
+        {
+            do_log(ofs, metadata, message);
+        }
+
+    protected:
+        mutable std::ofstream ofs;
+    };
+
+#endif // __cplusplus
+
+}   // namespace Log
+
+#endif // GOLFHOOK_LOG_HPP

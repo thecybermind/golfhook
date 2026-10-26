@@ -19,12 +19,11 @@ FARPROC install_IAT_hook(HMODULE target_module, const char* dll_name, const char
     char* module_base = (char*)target_module;   // module base as a char* for adding RVAs
     FARPROC ret = nullptr;                      // store and return old function address
     MEMORY_BASIC_INFORMATION thunkMemInfo;
-    DWORD oldProtect, _;
+    DWORD oldProtect, _;                        // storing old memory page protection to restore after writing
     PIMAGE_DOS_HEADER dosHeaders = (PIMAGE_DOS_HEADER)module_base;
     PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)(module_base + dosHeaders->e_lfanew);
     PIMAGE_DATA_DIRECTORY importDescriptorTable = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
     PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(module_base + importDescriptorTable->VirtualAddress);
-
 
     // loop through each descriptor entry looking for a matching DLL name (NULL = check every DLL)
     for (; importDescriptor->Name != 0; importDescriptor++) {
