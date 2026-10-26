@@ -17,26 +17,32 @@ Created By:
 
 // https://github.com/Toxocious/Aetherim
 
-std::unique_ptr<Wrapper> g_Aetherim;
+namespace GolfHook {
+    std::unique_ptr<Wrapper> g_Aetherim;
 
-void Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    (void)hInstance; (void)hPrevInstance; (void)lpCmdLine; (void)nCmdShow;
+    int UnityMain_Pre(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+        (void)hInstance; (void)hPrevInstance; (void)lpCmdLine; (void)nCmdShow;
 
-    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Init() called!\n";
+        int ret = 0;
 
-    // find a better hook into unity stuff
-    // can't initialize Il2cpp before UnityMain, and UnityMain doesn't return
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain_Pre() called!\n";
 
-    // Il2cpp::initialize();
-    
-    // g_Aetherim = std::make_unique<Wrapper>();
+        // find a better hook into unity stuff
+        // can't initialize Il2cpp before UnityMain, and UnityMain doesn't return
 
-    //const auto image = g_Aetherim->get_image("GameAssembly.dll");
-    //GHLOG(GH_LOG_DEBUG, GH_TAG) << "Assembly image: " << image;
+        // Il2cpp::initialize();
 
-    //const auto stats = image->get_class("GolfStatsUtility");
-    //GHLOG(GH_LOG_DEBUG, GH_TAG) << "GolfStatsUtility class: " << stats;
+        // g_Aetherim = std::make_unique<Wrapper>();
 
-    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Init() returning!\n";
-}
+        //const auto image = g_Aetherim->get_image("GameAssembly.dll");
+        //GHLOG(GH_LOG_DEBUG, GH_TAG) << "Assembly image: " << image;
 
+        //const auto stats = image->get_class("GolfStatsUtility");
+        //GHLOG(GH_LOG_DEBUG, GH_TAG) << "GolfStatsUtility class: " << stats;
+
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain_Pre() returning " << ret << "!\n";
+
+        return ret;
+    }
+
+} // namespace GolfHook

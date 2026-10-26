@@ -17,6 +17,7 @@ Created By:
 namespace Log {
 
     static AixLog::log_sink_ptr s_log_sink_file = nullptr;
+    static AixLog::log_sink_ptr s_log_sink_cout = nullptr;
 
     static AixLog::Severity s_log_level = DEFAULT_SEVERITY;
 
@@ -32,7 +33,9 @@ namespace Log {
         else
             s_log_sink_file = std::make_shared<AixLog::SinkFile>(severity, file);
 
-        AixLog::Log::init({ s_log_sink_file });
+        s_log_sink_cout = std::make_shared<AixLog::SinkCout>(DEFAULT_SEVERITY);
+
+        AixLog::Log::init({ s_log_sink_cout, s_log_sink_file });
     }
 
 
@@ -49,6 +52,7 @@ namespace Log {
     void log_set_severity(int severity) {
         s_log_level = (AixLog::Severity)severity;
         (*s_log_sink_file).filter.add_filter((AixLog::Severity)severity);
+        (*s_log_sink_cout).filter.add_filter((AixLog::Severity)severity);
     }
 
 

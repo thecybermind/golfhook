@@ -15,8 +15,12 @@ Created By:
 #include <windef.h>
 #include <Aetherim/src/wrapper.hpp>
 
-extern std::unique_ptr<Wrapper> g_Aetherim;
 
-void Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
+namespace GolfHook {
+    extern std::unique_ptr<Wrapper> g_Aetherim;
+
+    int UnityMain_Pre(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
+} // namespace GolfHook
+
 
 #endif // GOLFHOOK_MAIN_H

@@ -18,6 +18,11 @@ Created By:
  */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <io.h>
+#include <iostream>
+#include <fstream>
 
 #include "hook.h"
 #include "main.h"
@@ -26,6 +31,7 @@ Created By:
 #include "format.hpp"
 #include "version.h"
 
+
 #define DLLEXPORT __declspec(dllexport)
 #ifdef __cplusplus
 #define C_DLLEXPORT extern "C" DLLEXPORT
@@ -33,7 +39,10 @@ Created By:
 #define C_DLLEXPORT DLLEXPORT
 #endif
 
+
 static HMODULE hMe = nullptr;                   // this DLL handle
+static void RedirectIOToConsole();
+
 
 C_DLLEXPORT int UnityMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     const char* lpCmdLineA = GetCommandLineA();
@@ -56,10 +65,21 @@ C_DLLEXPORT int UnityMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR l
         return -1;
     }
 
-    Init(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+
+    int ret = 0;
+
+    // begin actual Unity hooking
+    ret = GolfHook::UnityMain_Pre(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+
+    // if pre hook returned error, cancel
+    if (ret != 0) {
+        GHLOG(GH_LOG_FATAL, GH_TAG) << "UnityMain_Pre returned error (" << ret << ")! Shutting down.\n";
+        return ret;
+    }
 
     // this function does not appear to actually return, even when exiting the game
-    int ret = UnityMain_orig(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    ret = UnityMain_orig(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    // UnityMain_Post(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
     GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain(\"" << lpCmdLineA << "\") returning " << ret << "\n";
 
@@ -71,9 +91,14 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
         hMe = hModule;
 
+        RedirectIOToConsole();
+
         Log::log_init("golfhook.log", Log::DEFAULT_SEVERITY, Log::DEFAULT_APPEND);
 
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook v" GH_VERSION " (" GH_BUILD ") loaded!\n";
+        GHLOG(GH_LOG_INFO, GH_TAG) << "Built: " GH_COMPILE " by " GH_BUILDER "\n";
+        GHLOG(GH_LOG_INFO, GH_TAG) << "URL: " GH_URL "\n";
+        GHLOG(GH_LOG_INFO, GH_TAG) << "\n";
 
         g_cfg = Config::cfg_load("golfhook.json");
         if (!g_cfg.empty()) {
@@ -93,4 +118,48 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) {
     }
 
     return TRUE;
+}
+
+
+/**
+* Generate a new console window for standard in/out/err.
+* 
+* From https://stackoverflow.com/a/191880/809900
+*/
+static const WORD MAX_CONSOLE_LINES = 500;  // maximum mumber of lines the output console should have
+static void RedirectIOToConsole() {
+    int hConHandle;
+    HANDLE lStdHandle;
+    CONSOLE_SCREEN_BUFFER_INFO coninfo;
+    FILE* fp;
+
+    // allocate a console for this app
+    AllocConsole();
+
+    // set the screen buffer to be big enough to let us scroll text
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+    coninfo.dwSize.Y = MAX_CONSOLE_LINES;
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+
+    // redirect unbuffered STDOUT to the console
+    lStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
+    freopen_s(&fp, "CONOUT$", "w", stdout);
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    // redirect unbuffered STDIN to the console
+    lStdHandle = GetStdHandle(STD_INPUT_HANDLE);
+    hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
+    freopen_s(&fp, "CONIN$", "r", stdin);
+    setvbuf(stdin, NULL, _IONBF, 0);
+
+    // redirect unbuffered STDERR to the console
+    lStdHandle = GetStdHandle(STD_ERROR_HANDLE);
+    hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
+    freopen_s(&fp, "CONOUT$", "w", stderr);
+    setvbuf(stderr, NULL, _IONBF, 0);
+
+    // make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
+    // point to console as well
+    std::ios::sync_with_stdio();
 }
