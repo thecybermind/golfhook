@@ -12,7 +12,7 @@ class Wrapper
 public:
   using images_t = std::vector<Image *>;
 
-public://private:
+private:
   images_t m_images {};
 
 public:

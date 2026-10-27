@@ -36,8 +36,8 @@ namespace GolfHook {
         Il2cpp::initialize();
         const auto Aetherim = std::make_unique<Wrapper>();
 
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "Aetherim image count: " << Aetherim->m_images.size() << "\n";
-        for (auto& i : Aetherim->m_images) {
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "Aetherim image count: " << Aetherim->get_images().size() << "\n";
+        for (auto& i : Aetherim->get_images()) {
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "Image: \"" << i->get_name() << "\"\n";
         }
 
