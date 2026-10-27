@@ -9,13 +9,6 @@ Created By:
 
 */
 
-/**
- * This file handles initial mod loading.
- * 
- * It uses IAT patching to hook GetProcAddress requests towards this DLL (version.dll) and to point them at the real version.dll.
- * 
- * It also uses IAT patching to hook the initial call to UnityPlayer.dll!UnityMain to begin the Unity engine.
- */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
@@ -24,7 +17,10 @@ Created By:
 #include <iostream>
 #include <fstream>
 
-#include "hook.h"
+#include <MinHook/MinHook.h>
+
+#include "dllmain.h"
+#include "iat_hook.h"
 #include "main.h"
 #include "config.hpp"
 #include "log.hpp"
@@ -32,21 +28,56 @@ Created By:
 #include "version.h"
 
 
-#define DLLEXPORT __declspec(dllexport)
-#ifdef __cplusplus
-#define C_DLLEXPORT extern "C" DLLEXPORT
-#else
-#define C_DLLEXPORT DLLEXPORT
-#endif
+#pragma comment(lib, "..\\lib\\MinHook.x64.lib")
+
+HMODULE hMe = nullptr;      // this DLL handle
 
 
-static HMODULE hMe = nullptr;                   // this DLL handle
-static void RedirectIOToConsole();
+static struct {
+    const char* name;
+    FARPROC proc;
+} procmap[] = {
+    { "il2cpp_init", (FARPROC)GolfHook::il2cpp_init_hook },
+    { "il2cpp_shutdown", (FARPROC)GolfHook::il2cpp_shutdown_hook },
+};
 
 
+FARPROC WINAPI UnityPlayer_GetProcAddress_hook(HMODULE hModule, LPCSTR lpProcName) {
+    static HMODULE hGameAssembly = nullptr;
+
+    FARPROC ret = GetProcAddress(hModule, lpProcName);
+
+    if (!hGameAssembly)
+        hGameAssembly = GetModuleHandleA("GameAssembly.dll");
+
+    if (hModule != hGameAssembly)
+        return ret;
+
+    // hook functions from GameAssembly
+    for (auto& i : procmap) {
+        if (strcmp(lpProcName, i.name) == 0) {
+            GHLOG(GH_LOG_DEBUG, GH_TAG) << "GetProcAddress(\"GameAssembly.dll\", \"" << lpProcName << "\") called.\n";
+
+            // store original pointer in hook maps for lookup
+            GolfHook::hook_map_proc[i.proc] = ret;
+            GolfHook::hook_map_name[i.name] = ret;
+            return i.proc;
+        }
+    }
+
+    return ret;
+}
+
+
+/**
+ * This is the entry point called by "Golf With Your Friends.exe".
+ * 
+ * We primarily chose this because it guarantees we get loaded before UnityPlayer[_orig].dll. Since we load that DLL
+ * and call UnityMain ourselves, we are able to hook that DLL's IAT for GetProcAddress to hook functions in GameAssembly.dll.
+ * 
+ */
 C_DLLEXPORT int UnityMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    const char* lpCmdLineA = GetCommandLineA();
-    GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain(\"" << lpCmdLineA << "\") called\n";
+    GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain() called\n";
 
     // load original UnityPlayer.dll
     static HMODULE hUnityPlayer = LoadLibraryA("UnityPlayer_orig.dll");
@@ -65,23 +96,15 @@ C_DLLEXPORT int UnityMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR l
         return -1;
     }
 
-
-    int ret = 0;
-
-    // begin actual Unity hooking
-    ret = GolfHook::UnityMain_Pre(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-
-    // if pre hook returned error, cancel
-    if (ret != 0) {
-        GHLOG(GH_LOG_FATAL, GH_TAG) << "UnityMain_Pre returned error (" << ret << ")! Shutting down.\n";
-        return ret;
+    // hook GetProcAddress called from UnityPlayer_orig.dll
+    if (!install_IAT_hook(hUnityPlayer, "kernel32.dll", "GetProcAddress", (FARPROC)UnityPlayer_GetProcAddress_hook)) {
+        GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to hook UnityPlayer_orig.dll's GetProcAddress! Shutting down.\n";
+        return -1;
     }
 
-    // this function does not appear to actually return, even when exiting the game
-    ret = UnityMain_orig(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-    // UnityMain_Post(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    int ret = UnityMain_orig(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
-    GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain(\"" << lpCmdLineA << "\") returning " << ret << "\n";
+    GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain() returning " << ret << "\n";
 
     return ret;
 }
@@ -112,8 +135,15 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) {
         std::string cfg_loglevel = Config::cfg_get_string(g_cfg, "loglevel", "");
         if (!cfg_loglevel.empty())
             Log::log_set_severity(Log::log_severity_from_name(cfg_loglevel));
+
+        if (MH_Initialize() != MH_OK) {
+            GHLOG(GH_LOG_FATAL, GH_TAG) << "MinHook failed to initialize.\n";
+            return FALSE;
+        }
     }
     else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
+        MH_Uninitialize();
+
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook shutting down.\n";
     }
 
@@ -126,8 +156,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) {
 * 
 * From https://stackoverflow.com/a/191880/809900
 */
-static const WORD MAX_CONSOLE_LINES = 500;  // maximum mumber of lines the output console should have
-static void RedirectIOToConsole() {
+static constexpr WORD MAX_CONSOLE_LINES = 500;  // maximum mumber of lines the output console should have
+void RedirectIOToConsole() {
     int hConHandle;
     HANDLE lStdHandle;
     CONSOLE_SCREEN_BUFFER_INFO coninfo;

@@ -22,9 +22,10 @@ Created By:
 #define GH_VERSION_MINOR    0
 // Revision semver component
 #define GH_VERSION_REV      1
+#define GH_VERSION_REV2     0
 
 // String of dotted version number
-#define GH_VERSION          STRINGIFY(GH_VERSION_MAJOR) "." STRINGIFY(GH_VERSION_MINOR) "." STRINGIFY(GH_VERSION_REV)
+#define GH_VERSION          STRINGIFY(GH_VERSION_MAJOR) "." STRINGIFY(GH_VERSION_MINOR) "." STRINGIFY(GH_VERSION_REV) "." STRINGIFY(GH_VERSION_REV2)
 
 // When was the DLL built? Uses __TIME__ and __DATE__
 #define GH_COMPILE          __TIME__ " " __DATE__
@@ -42,6 +43,6 @@ Created By:
 #endif
 
 // Comma-separated DWORD form of version for golfhook.rc
-#define GH_VERSION_DWORD    GH_VERSION_MAJOR , GH_VERSION_MINOR , GH_VERSION_REV , 0
+#define GH_VERSION_DWORD    GH_VERSION_MAJOR , GH_VERSION_MINOR , GH_VERSION_REV , GH_VERSION_REV2
 
 #endif // GOLFHOOK_VERSION_H

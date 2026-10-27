@@ -13,17 +13,22 @@
   <ItemGroup>
     <ClCompile Include="..\src\config.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
-    <ClCompile Include="..\src\hook.cpp" />
+    <ClCompile Include="..\src\iat_hook.cpp" />
     <ClCompile Include="..\src\log.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\config.hpp" />
+    <ClInclude Include="..\include\dllmain.h" />
     <ClInclude Include="..\include\format.hpp" />
-    <ClInclude Include="..\include\hook.h" />
+    <ClInclude Include="..\include\iat_hook.h" />
     <ClInclude Include="..\include\log.hpp" />
     <ClInclude Include="..\include\main.h" />
     <ClInclude Include="..\include\version.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="golfhook.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
@@ -61,14 +66,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\include</IncludePath>
     <SourcePath>$(VC_SourcePath);..\src</SourcePath>
-    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\vendor</ExternalIncludePath>
+    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\include</IncludePath>
     <SourcePath>$(VC_SourcePath);..\src</SourcePath>
-    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\vendor</ExternalIncludePath>
+    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -83,6 +88,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <DisableAnalyzeExternal />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,6 +113,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <DisableAnalyzeExternal />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

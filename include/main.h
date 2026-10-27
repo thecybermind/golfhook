@@ -13,13 +13,18 @@ Created By:
 #define GOLFHOOK_MAIN_H
 
 #include <windef.h>
-#include <Aetherim/src/wrapper.hpp>
-
+#include <Aetherim/wrapper.hpp>
+#include <map>
+#include <string>
 
 namespace GolfHook {
-    extern std::unique_ptr<Wrapper> g_Aetherim;
+    extern Image* Assembly;
 
-    int UnityMain_Pre(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
+    extern std::map<FARPROC, FARPROC> hook_map_proc;
+    extern std::map<std::string, FARPROC> hook_map_name;
+
+    int64_t il2cpp_init_hook(const char* domain);
+    void il2cpp_shutdown_hook();
 } // namespace GolfHook
 
 

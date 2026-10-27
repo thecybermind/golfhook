@@ -11,38 +11,61 @@ Created By:
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <string>
 #include "main.h"
-#include <Aetherim/src/wrapper.hpp>
+#include <Aetherim/wrapper.hpp>
 #include "log.hpp"
 
-// https://github.com/Toxocious/Aetherim
 
 namespace GolfHook {
-    std::unique_ptr<Wrapper> g_Aetherim;
+    Image* Assembly;
 
-    int UnityMain_Pre(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-        (void)hInstance; (void)hPrevInstance; (void)lpCmdLine; (void)nCmdShow;
+    std::map<FARPROC, FARPROC> hook_map_proc;
+    std::map<std::string, FARPROC> hook_map_name;
 
-        int ret = 0;
+    int64_t il2cpp_init_hook(const char* domain) {
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") called.\n";
 
-        GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain_Pre() called!\n";
+        decltype(&il2cpp_init_hook) orig = (decltype(orig))hook_map_proc[(FARPROC)&il2cpp_init_hook];
 
-        // find a better hook into unity stuff
-        // can't initialize Il2cpp before UnityMain, and UnityMain doesn't return
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() called.\n";
+        int64_t ret = orig(domain);
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() returned " << ret << "\n";
 
-        // Il2cpp::initialize();
+        GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing Aetherim.\n";
+        Il2cpp::initialize();
+        const auto Aetherim = std::make_unique<Wrapper>();
 
-        // g_Aetherim = std::make_unique<Wrapper>();
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "Aetherim image count: " << Aetherim->m_images.size() << "\n";
+        for (auto& i : Aetherim->m_images) {
+            GHLOG(GH_LOG_DEBUG, GH_TAG) << "Image: \"" << i->get_name() << "\"\n";
+        }
 
-        //const auto image = g_Aetherim->get_image("GameAssembly.dll");
-        //GHLOG(GH_LOG_DEBUG, GH_TAG) << "Assembly image: " << image;
+        Assembly = Aetherim->get_image("Assembly-CSharp.dll");
+        if (!Assembly) {
+            GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load Assembly-CSharp image. Shutting down.\n";
+            return 0;
+        }
 
-        //const auto stats = image->get_class("GolfStatsUtility");
-        //GHLOG(GH_LOG_DEBUG, GH_TAG) << "GolfStatsUtility class: " << stats;
+        const auto stats = Assembly->get_class("GolfStatsUtility");
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "GolfStatsUtility class: " << stats;
 
-        GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain_Pre() returning " << ret << "!\n";
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") returning " << ret << ".\n";
 
         return ret;
     }
+
+    void il2cpp_shutdown_hook() {
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() called.\n";
+
+        decltype(&il2cpp_shutdown_hook) orig = (decltype(orig))hook_map_proc[(FARPROC)&il2cpp_shutdown_hook];
+
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() called.\n";
+        orig();
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() returned.\n";
+
+        GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() returning.\n";
+    }
+
 
 } // namespace GolfHook
