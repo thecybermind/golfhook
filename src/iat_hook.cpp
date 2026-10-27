@@ -13,7 +13,6 @@ Created By:
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-typedef HMODULE(WINAPI *pfnLLA_t)(LPCSTR);
 
 FARPROC install_IAT_hook(HMODULE target_module, const char* dll_name, const char* function_name, FARPROC function_hook) {
     char* module_base = (char*)target_module;   // module base as a char* for adding RVAs
