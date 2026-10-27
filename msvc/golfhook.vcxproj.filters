@@ -56,6 +56,9 @@
     <ClInclude Include="..\include\iat_hook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\vhook.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="golfhook.rc">
