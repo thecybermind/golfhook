@@ -1,7 +1,7 @@
 /*
-QMM - Q3 MultiMod
-Copyright 2025-2026
-https://github.com/thecybermind/qmm2/
+GolfHook - Golf With Your Friends Hook
+Copyright 2026
+https://github.com/thecybermind/golfhook/
 3-clause BSD license: https://opensource.org/license/bsd-3-clause
 
 Created By:
