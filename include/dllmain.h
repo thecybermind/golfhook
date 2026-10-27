@@ -12,6 +12,9 @@ Created By:
 #ifndef GOLFHOOK_DLLMAIN_H
 #define GOLFHOOK_DLLMAIN_H
 
+#define WIN32_LEAN_AND_MEAN
+#include <windef.h>
+
 #define DLLEXPORT __declspec(dllexport)
 #ifdef __cplusplus
 #define C_DLLEXPORT extern "C" DLLEXPORT
