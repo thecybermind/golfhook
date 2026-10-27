@@ -156,10 +156,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) {
 * 
 * From https://stackoverflow.com/a/191880/809900
 */
-static constexpr WORD MAX_CONSOLE_LINES = 500;  // maximum mumber of lines the output console should have
 void RedirectIOToConsole() {
-    int hConHandle;
-    HANDLE lStdHandle;
     CONSOLE_SCREEN_BUFFER_INFO coninfo;
     FILE* fp;
 
@@ -168,24 +165,18 @@ void RedirectIOToConsole() {
 
     // set the screen buffer to be big enough to let us scroll text
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
-    coninfo.dwSize.Y = MAX_CONSOLE_LINES;
+    coninfo.dwSize.Y = 500; // maximum mumber of lines the output console should have
     SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
     // redirect unbuffered STDOUT to the console
-    lStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
     freopen_s(&fp, "CONOUT$", "w", stdout);
     setvbuf(stdout, NULL, _IONBF, 0);
 
     // redirect unbuffered STDIN to the console
-    lStdHandle = GetStdHandle(STD_INPUT_HANDLE);
-    hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
     freopen_s(&fp, "CONIN$", "r", stdin);
     setvbuf(stdin, NULL, _IONBF, 0);
 
     // redirect unbuffered STDERR to the console
-    lStdHandle = GetStdHandle(STD_ERROR_HANDLE);
-    hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
     freopen_s(&fp, "CONOUT$", "w", stderr);
     setvbuf(stderr, NULL, _IONBF, 0);
 

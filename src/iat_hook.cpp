@@ -9,9 +9,9 @@ Created By:
 
 */
 
-#include <string.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <string.h>
 
 
 FARPROC install_IAT_hook(HMODULE target_module, const char* dll_name, const char* function_name, FARPROC function_hook) {

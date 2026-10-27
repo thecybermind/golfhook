@@ -12,10 +12,9 @@ Created By:
 #ifndef GOLFHOOK_LOG_HPP
 #define GOLFHOOK_LOG_HPP
 
-#ifdef __cplusplus
+#include <string>
 
 #include <aixlog/aixlog.hpp>
-#include <string>
 
 /**
 * @brief Log message.
@@ -136,8 +135,6 @@ namespace Log {
     protected:
         mutable std::ofstream ofs;
     };
-
-#endif // __cplusplus
 
 }   // namespace Log
 

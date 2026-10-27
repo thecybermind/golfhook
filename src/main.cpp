@@ -12,9 +12,11 @@ Created By:
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <string>
-#include "main.h"
+
 #include <Aetherim/src/wrapper.hpp>
 #include "log.hpp"
+
+#include "main.h"
 
 
 namespace GolfHook {

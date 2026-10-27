@@ -11,6 +11,7 @@ Created By:
 
 #include <string>
 #include <cstdarg>
+
 #include "log.hpp"
 #include "format.hpp"
 
