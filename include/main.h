@@ -13,7 +13,7 @@ Created By:
 #define GOLFHOOK_MAIN_H
 
 #include <windef.h>
-#include <Aetherim/wrapper.hpp>
+#include <Aetherim/src/wrapper.hpp>
 #include <map>
 #include <string>
 

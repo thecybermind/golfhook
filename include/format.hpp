@@ -13,7 +13,7 @@ Created By:
 #define GOLFHOOK_FORMAT_HPP
 
 #define FMT_HEADER_ONLY
-#include <fmt/format.h>
-#include <fmt/std.h>        // handle std:: types
+#include <fmt/include/fmt/format.h>
+#include <fmt/include/fmt/std.h>        // handle std:: types
 
 #endif // GOLFHOOK_FORMAT_HPP

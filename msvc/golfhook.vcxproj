@@ -67,14 +67,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\include</IncludePath>
     <SourcePath>$(VC_SourcePath);..\src</SourcePath>
-    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\vendor</ExternalIncludePath>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\include</IncludePath>
     <SourcePath>$(VC_SourcePath);..\src</SourcePath>
-    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\vendor</ExternalIncludePath>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>

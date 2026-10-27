@@ -1,0 +1,6 @@
+[submodule "vendor/Aetherim"]
+	path = vendor/Aetherim
+	url = https://github.com/Toxocious/Aetherim
+[submodule "vendor/fmt"]
+	path = vendor/fmt
+	url = https://github.com/fmtlib/fmt
