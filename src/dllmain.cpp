@@ -58,7 +58,7 @@ FARPROC WINAPI UnityPlayer_GetProcAddress_hook(HMODULE hModule, LPCSTR lpProcNam
         if (strcmp(lpProcName, i.name) == 0) {
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "GetProcAddress(\"GameAssembly.dll\", \"" << lpProcName << "\") called.\n";
 
-            // store original pointer in hook maps for lookup
+            // store original pointer in hook maps for lookup in hook functions
             GolfHook::hook_map_proc[i.proc] = ret;
             GolfHook::hook_map_name[i.name] = ret;
             return i.proc;

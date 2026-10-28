@@ -18,6 +18,7 @@
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\aetherim.hpp" />
     <ClInclude Include="..\include\config.hpp" />
     <ClInclude Include="..\include\dllmain.h" />
     <ClInclude Include="..\include\format.hpp" />

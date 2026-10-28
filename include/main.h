@@ -13,12 +13,13 @@ Created By:
 #define GOLFHOOK_MAIN_H
 
 #include <windef.h>
-#include <Aetherim/src/wrapper.hpp>
 #include <map>
 #include <string>
 
+#include "aetherim.hpp"
+
 namespace GolfHook {
-    extern Image* Assembly;
+    extern Aetherim::Image* Assembly;
 
     extern std::map<FARPROC, FARPROC> hook_map_proc;
     extern std::map<std::string, FARPROC> hook_map_name;

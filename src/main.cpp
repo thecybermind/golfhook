@@ -13,14 +13,13 @@ Created By:
 #include <windows.h>
 #include <string>
 
-#include <Aetherim/src/wrapper.hpp>
+#include "aetherim.hpp"
 #include "log.hpp"
-
 #include "main.h"
 
 
 namespace GolfHook {
-    Image* Assembly;
+    Aetherim::Image* Assembly;
 
     std::map<FARPROC, FARPROC> hook_map_proc;
     std::map<std::string, FARPROC> hook_map_name;
@@ -36,7 +35,7 @@ namespace GolfHook {
 
         GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing Aetherim.\n";
         Il2cpp::initialize();
-        const auto Aetherim = std::make_unique<Wrapper>();
+        const auto Aetherim = std::make_unique<Aetherim::Wrapper>();
 
         GHLOG(GH_LOG_DEBUG, GH_TAG) << "Aetherim image count: " << Aetherim->get_images().size() << "\n";
         for (auto& i : Aetherim->get_images()) {
