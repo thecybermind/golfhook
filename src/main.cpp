@@ -27,24 +27,29 @@ namespace GolfHook {
     int64_t il2cpp_init_hook(const char* domain) {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") called.\n";
 
+        // get original function out of hook map
         decltype(&il2cpp_init_hook) orig = (decltype(orig))hook_map_proc[(FARPROC)&il2cpp_init_hook];
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() called.\n";
-        int64_t ret = orig(domain);
+        int64_t ret = orig(domain); // call original function
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() returned " << ret << "\n";
+
+        // at this point, the Unity engine has initialized IL2CPP, so we can now use Aetherim to peek into it
 
         GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing Aetherim.\n";
         Il2cpp::initialize();
         const auto Aetherim = std::make_unique<Aetherim::Wrapper>();
 
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "Aetherim image count: " << Aetherim->get_images().size() << "\n";
+        // output some debug info about the IL2CPP environment
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (Aetherim->is_debugger_attached() ? "true" : "false") << "\n";
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP image count: " << Aetherim->get_images().size() << "\n";
         for (auto& i : Aetherim->get_images()) {
-            GHLOG(GH_LOG_DEBUG, GH_TAG) << "Image: \"" << i->get_name() << "\"\n";
+            GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tIL2CPP image: \"" << i->get_name() << "\"\n";
         }
 
         Assembly = Aetherim->get_image("Assembly-CSharp.dll");
         if (!Assembly) {
-            GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load Assembly-CSharp image. Shutting down.\n";
+            GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load Assembly-CSharp IL2CPP image. Shutting down.\n";
             return 0;
         }
 
@@ -59,10 +64,11 @@ namespace GolfHook {
     void il2cpp_shutdown_hook() {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() called.\n";
 
+        // get original function out of hook map
         decltype(&il2cpp_shutdown_hook) orig = (decltype(orig))hook_map_proc[(FARPROC)&il2cpp_shutdown_hook];
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() called.\n";
-        orig();
+        orig(); // call original function
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() returned.\n";
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() returning.\n";
