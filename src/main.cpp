@@ -53,6 +53,15 @@ namespace GolfHook {
             return 0;
         }
 
+        // output some debug info about the assembly
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "Assembly class count: " << Assembly->get_classes().size() << "\n";
+        for (auto& i : Assembly->get_classes()) {
+            if (!i)
+                continue;
+            Aetherim::Class* c = (Aetherim::Class*)i;
+            GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tAssembly class: \"" << c->get_name() << "\" (" << c->get_fields().size() << " fields)\n";
+        }
+
         const auto stats = Assembly->get_class("GolfStatsUtility");
         GHLOG(GH_LOG_DEBUG, GH_TAG) << "GolfStatsUtility class: " << stats;
 
