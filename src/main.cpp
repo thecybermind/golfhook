@@ -66,9 +66,15 @@ namespace GolfHook {
 
         // load plugins
         for (std::string& plugin_path : Config::cfg_get_array_str(g_cfg, "plugins")) {
+            GHLOG(GH_LOG_INFO, GH_TAG) << "Attempting to load plugin \"" << plugin_path << "\"...\n";
             Plugin p;
-            if (p.Load(plugin_path))
+            if (p.Load(plugin_path)) {
                 g_plugins.push_back(std::move(p));
+                GHLOG(GH_LOG_INFO, GH_TAG) << "Plugin \"" << plugin_path << "\" loaded.\n";
+            }
+            else {
+                GHLOG(GH_LOG_INFO, GH_TAG) << "Plugin \"" << plugin_path << "\" not loaded.\n";
+            }
         }
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") returning " << ret << ".\n";

@@ -85,7 +85,7 @@ extern plugin_funcs g_pluginfuncs;
 // Set '*pluginvars` to &g_pluginvars in GolfHook_Query (or just use GH_GIVE_PTRS())
 extern plugin_vars g_pluginvars;
 
-// Pass pointers to QMM in QMM_Query
+// Pass pointers to GolfHook in GolfHook_Query
 #define GH_GIVE_PTRS() do { \
             *plugininfo = &g_plugininfo; \
             *pluginfuncs = &g_pluginfuncs; \

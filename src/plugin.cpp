@@ -41,7 +41,7 @@ plugin_vars s_plugin_vars = {
     nullptr, // assembly
 };
 
-// List of QMM plugins
+// List of GolfHook plugins
 std::vector<Plugin> g_plugins;
 
 
@@ -68,8 +68,8 @@ Plugin& Plugin::operator=(Plugin&& other) noexcept {
     if (this == &other)
         return *this;
 
-    // QMM_Detach is called for unloading plugins by Unload/destructor, so we should swap as much as possible
-    // in case some plugin wants to do stupid stuff in QMM_Detach
+    // GolfHook_Detach is called for unloading plugins by Unload/destructor, so we should swap as much as possible
+    // in case some plugin wants to do stupid stuff in GolfHook_Detach
     std::swap(this->dll, other.dll);
     std::swap(this->path, other.path);
     std::swap(this->GolfHook_Query, other.GolfHook_Query);
@@ -154,7 +154,7 @@ bool Plugin::Load(std::string file) {
 
     // call GolfHook_Attach. if it fails (returns false), destructor will call GolfHook_Detach and unload DLL
     if (!(this->GolfHook_Attach())) {
-        GHLOG(GH_LOG_ERROR, GH_TAG) << "plugin_load(\"" << Util::path_basename(file) << "\"): GolfHook_Attach() returned 0\n";
+        GHLOG(GH_LOG_ERROR, GH_TAG) << "plugin_load(\"" << Util::path_basename(file) << "\"): GolfHook_Attach() returned false.\n";
         return false;
     }
 
