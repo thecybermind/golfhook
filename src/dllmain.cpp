@@ -21,7 +21,7 @@ Created By:
 
 #include "dllmain.h"
 #include "iat_hook.h"
-#include "main.h"
+#include "main.hpp"
 #include "config.hpp"
 #include "log.hpp"
 #include "format.hpp"

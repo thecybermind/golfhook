@@ -15,7 +15,9 @@ Created By:
 
 #include "aetherim.hpp"
 #include "log.hpp"
-#include "main.h"
+#include "main.hpp"
+#include "plugin.hpp"
+#include "config.hpp"
 
 
 namespace GolfHook {
@@ -62,8 +64,12 @@ namespace GolfHook {
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tAssembly class: \"" << c->get_name() << "\" (" << c->get_fields().size() << " fields)\n";
         }
 
-        const auto stats = Assembly->get_class("GolfStatsUtility");
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "GolfStatsUtility class: " << stats;
+        // load plugins
+        for (std::string& plugin_path : Config::cfg_get_array_str(g_cfg, "plugins")) {
+            Plugin p;
+            if (p.Load(plugin_path))
+                g_plugins.push_back(std::move(p));
+        }
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") returning " << ret << ".\n";
 

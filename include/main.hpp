@@ -9,8 +9,8 @@ Created By:
 
 */
 
-#ifndef GOLFHOOK_MAIN_H
-#define GOLFHOOK_MAIN_H
+#ifndef GOLFHOOK_MAIN_HPP
+#define GOLFHOOK_MAIN_HPP
 
 #include <windef.h>
 #include <map>
@@ -29,4 +29,4 @@ namespace GolfHook {
 } // namespace GolfHook
 
 
-#endif // GOLFHOOK_MAIN_H
+#endif // GOLFHOOK_MAIN_HPP
