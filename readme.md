@@ -12,6 +12,8 @@ _Work in progress._
 
 GolfHook is a proxy DLL for [Golf With Your Friends](https://store.steampowered.com/app/431240/Golf_With_Your_Friends/) that waits for the Unity engine to start and then uses [Aetherim](https://github.com/Toxocious/Aetherim/) to get access to IL2CPP methods. GolfHook then provides the loaded Aetherim assembly image to individual plugins for them to hook things as needed.
 
+It functions a little like [BepInEx](https://github.com/bepinex/bepinex) for other Unity games, but I primarily made this because BepInEx won't work with games that use the IL2CPP Unity variant (like GWYF).
+
 ## Thanks
 
 Designed by:
