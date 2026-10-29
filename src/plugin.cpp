@@ -29,17 +29,23 @@ constexpr int ROTATING_BUFFER_NUM = 16;  // must be power of 2
 constexpr int ROTATING_BUFFER_MASK = ROTATING_BUFFER_NUM - 1;
 constexpr int ROTATING_BUFFER_SIZE = 1024;
 
+
 static void s_plugin_helper_WriteGHLog(plugin_id plid, int severity, const char* fmt, ...);
+static const char* s_plugin_helper_VarArgs(plugin_id plid [[maybe_unused]], const char* fmt, ...);
+
 
 // Struct of plugin helper functions
 static plugin_funcs s_plugin_funcs = {
     s_plugin_helper_WriteGHLog,
+    s_plugin_helper_VarArgs,
 };
+
 
 // Variables made available to plugins
 plugin_vars s_plugin_vars = {
     nullptr, // assembly
 };
+
 
 // List of GolfHook plugins
 std::vector<Plugin> g_plugins;
@@ -138,9 +144,9 @@ bool Plugin::Load(std::string file) {
     }
 
     // now fill the plugin's function and variable tables
-    s_plugin_vars.assembly = GolfHook::Assembly;
     *this->pluginfuncs = s_plugin_funcs;
     *this->pluginvars = s_plugin_vars;
+    this->pluginvars->assembly = GolfHook::Assembly;
 
     // find remaining GolfHook api functions or fail
     if (!(this->GolfHook_Attach = (Plugin::plugin_attach)Util::dll_symbol(this->dll, "GolfHook_Attach"))) {
@@ -220,4 +226,34 @@ static void s_plugin_helper_WriteGHLog(plugin_id plid, int severity, const char*
 
     // not GHLOG since we already checked log_level_match()
     LOG(severity, Util::str_toupper(logtag)) << buf << std::flush;
+}
+
+
+/**
+* @brief Construct a string from format string.
+*
+* @param plid Plugin ID of the calling plugin
+* @param fmt Format string
+* @param ... Format arguments
+* @return Pointer to the constructed string
+*/
+static const char* s_plugin_helper_VarArgs(plugin_id plid [[maybe_unused]], const char* fmt, ...) {
+    if (!fmt)
+        fmt = "";
+
+    va_list argptr;
+    static char str[ROTATING_BUFFER_NUM][ROTATING_BUFFER_SIZE];
+    static int index = 0;
+
+    // cycle rotating buffer and store string
+    index = (index + 1) & ROTATING_BUFFER_MASK;
+
+    va_start(argptr, fmt);
+    vsnprintf(str[index], sizeof(str[index]), fmt, argptr);
+    va_end(argptr);
+
+    char* ret = str[index];
+
+    // GHLOG(GH_LOG_TRACE, GH_TAG) << "Plugin \"" << ((plugin_info*)plid)->name << "\" called VarArgs(\"" << format << "\") = \"" << ret << "\"\n";
+    return ret;
 }

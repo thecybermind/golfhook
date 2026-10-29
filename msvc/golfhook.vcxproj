@@ -14,18 +14,19 @@
     <ClCompile Include="..\src\config.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
     <ClCompile Include="..\src\iat_hook.cpp" />
+    <ClCompile Include="..\src\il2cpp.cpp" />
     <ClCompile Include="..\src\log.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\plugin.cpp" />
     <ClCompile Include="..\src\util.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\aetherim.hpp" />
     <ClInclude Include="..\include\config.hpp" />
     <ClInclude Include="..\include\dllmain.h" />
     <ClInclude Include="..\include\format.hpp" />
     <ClInclude Include="..\include\ghapi.hpp" />
     <ClInclude Include="..\include\iat_hook.h" />
+    <ClInclude Include="..\include\il2cpp.hpp" />
     <ClInclude Include="..\include\log.hpp" />
     <ClInclude Include="..\include\main.hpp" />
     <ClInclude Include="..\include\plugin.hpp" />

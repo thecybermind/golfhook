@@ -16,10 +16,10 @@ Created By:
 #include <map>
 #include <string>
 
-#include "aetherim.hpp"
+#include "il2cpp.hpp"
 
 namespace GolfHook {
-    extern Aetherim::Image* Assembly;
+    extern IL2CPP::IImage* Assembly;
 
     extern std::map<FARPROC, FARPROC> hook_map_proc;
     extern std::map<std::string, FARPROC> hook_map_name;

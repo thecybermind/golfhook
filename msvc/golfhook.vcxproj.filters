@@ -36,6 +36,9 @@
     <ClCompile Include="..\src\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\il2cpp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\format.hpp">
@@ -62,9 +65,6 @@
     <ClInclude Include="..\include\vhook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\aetherim.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\plugin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,6 +75,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\main.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\il2cpp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

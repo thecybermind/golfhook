@@ -13,7 +13,7 @@ Created By:
 #include <windows.h>
 #include <string>
 
-#include "aetherim.hpp"
+#include "il2cpp.hpp"
 #include "log.hpp"
 #include "main.hpp"
 #include "plugin.hpp"
@@ -21,7 +21,7 @@ Created By:
 
 
 namespace GolfHook {
-    Aetherim::Image* Assembly;
+    IL2CPP::IImage* Assembly;
 
     std::map<FARPROC, FARPROC> hook_map_proc;
     std::map<std::string, FARPROC> hook_map_name;
@@ -36,20 +36,22 @@ namespace GolfHook {
         int64_t ret = orig(domain); // call original function
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() returned " << ret << "\n";
 
-        // at this point, the Unity engine has initialized IL2CPP, so we can now use Aetherim to peek into it
+        // at this point, the Unity engine has initialized IL2CPP, so begin looking inside
 
-        GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing Aetherim.\n";
-        Il2cpp::initialize();
-        const auto Aetherim = std::make_unique<Aetherim::Wrapper>();
+        GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing IL2CPP.\n";
+        IL2CPP::initialize();
+        const auto manager = std::make_unique<IL2CPP::Manager>();
 
         // output some debug info about the IL2CPP environment
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (Aetherim->is_debugger_attached() ? "true" : "false") << "\n";
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP image count: " << Aetherim->get_images().size() << "\n";
-        for (auto& i : Aetherim->get_images()) {
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (manager->is_debugger_attached() ? "true" : "false") << "\n";
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP image count: " << manager->get_images().size() << "\n";
+        for (auto i : manager->get_images()) {
+            if (!i)
+                continue;
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tIL2CPP image: \"" << i->get_name() << "\"\n";
         }
 
-        Assembly = Aetherim->get_image("Assembly-CSharp.dll");
+        Assembly = manager->get_image("Assembly-CSharp.dll");
         if (!Assembly) {
             GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load Assembly-CSharp IL2CPP image. Shutting down.\n";
             return 0;
@@ -60,11 +62,12 @@ namespace GolfHook {
         for (auto& i : Assembly->get_classes()) {
             if (!i)
                 continue;
-            Aetherim::Class* c = (Aetherim::Class*)i;
+            IL2CPP::IClass* c = (IL2CPP::IClass*)i;
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tAssembly class: \"" << c->get_name() << "\" (" << c->get_fields().size() << " fields)\n";
         }
 
         // load plugins
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << "Loading plugins...\n";
         for (std::string& plugin_path : Config::cfg_get_array_str(g_cfg, "plugins")) {
             GHLOG(GH_LOG_INFO, GH_TAG) << "Attempting to load plugin \"" << plugin_path << "\"...\n";
             Plugin p;
@@ -76,6 +79,7 @@ namespace GolfHook {
                 GHLOG(GH_LOG_INFO, GH_TAG) << "Plugin \"" << plugin_path << "\" not loaded.\n";
             }
         }
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << g_plugins.size() << " plugin(s) loaded.\n";
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") returning " << ret << ".\n";
 
@@ -93,9 +97,12 @@ namespace GolfHook {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() returned.\n";
 
         // unload plugins
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << "Unloading plugins...\n";
         for (Plugin& p : g_plugins) {
             p.Unload();
         }
+        g_plugins.clear();
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << "Plugins unloaded.\n";
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() returning.\n";
     }

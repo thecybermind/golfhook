@@ -12,7 +12,7 @@ Created By:
 #ifndef GOLFHOOK_GHAPI_HPP
 #define GOLFHOOK_GHAPI_HPP
 
-#include "aetherim.hpp"
+#include "il2cpp.hpp"
 
 // plugins and internal use
 #if defined(_WIN32)
@@ -66,15 +66,19 @@ enum {
 
 /* Prototype struct for GolfHook plugin utility functions */
 typedef struct {
-    void (*pfnWriteGHLog)(plugin_id plid, int severity, const char* fmt, ...);                          // Write to the GolfHook log
+    void (*pfnWriteGHLog)(plugin_id plid, int severity, const char* fmt, ...);      // Write to the GolfHook log
+    const char* (*pfnVarArgs)(plugin_id plid, const char* fmt, ...);                // Simple vsprintf helper with rotating buffer
 } plugin_funcs;
 
 #define GH_WRITEGHLOG(sev, fmt, ...)    (g_pluginfuncs.pfnWriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__)   // Write to the GolfHook log
+#define GH_VARARGS(fmt, ...)            (g_pluginfuncs.pfnVarArgs)(PLID, fmt, __VA_ARGS__)              // Simple vsprintf helper
 
 /* Struct of vars for GolfHook plugins */
 typedef struct {
-    Aetherim::Image* assembly;
+    IL2CPP::IImage* assembly;
 } plugin_vars;
+
+#define GH_ASSEMBLY     (g_pluginvars.assembly)
 
 /* Plugin use only */
 
