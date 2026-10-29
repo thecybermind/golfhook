@@ -1,4 +1,6 @@
 # GolfHook
 GolfHook - Golf With Your Friends Hook
 
-Work in progress. Uses Aetherim to look into the IL2CPP Unity game engine. 
+_Work in progress._
+
+Proxy DLL that waits until the Unity engine is started and then uses [Aetherim](https://github.com/Toxocious/Aetherim/) to get access to IL2CPP methods. Provides the loaded Aetherim assembly image to plugins for them to hook things as needed.
