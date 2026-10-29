@@ -92,6 +92,11 @@ namespace GolfHook {
         orig(); // call original function
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() returned.\n";
 
+        // unload plugins
+        for (Plugin& p : g_plugins) {
+            p.Unload();
+        }
+
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() returning.\n";
     }
 
