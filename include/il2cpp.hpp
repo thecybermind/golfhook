@@ -98,6 +98,7 @@ namespace IL2CPP {
             std::vector<IImage*> m_images;
         public:
             Manager();
+            ~Manager();
 
             virtual IImage* get_image(const char* name) const;
             virtual std::vector<IImage*> get_images() const;

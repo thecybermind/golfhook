@@ -681,6 +681,14 @@ namespace IL2CPP {
     }   // Manager::Manager()
 
 
+    Manager::~Manager() {
+        for (auto& i : m_images) {
+            delete i;
+        }
+        m_images.clear();
+    }
+
+
     IImage* Manager::get_image(const char* name) const {
         for (const auto image : m_images) {
             if (!strcmp(name, image->get_name()))
