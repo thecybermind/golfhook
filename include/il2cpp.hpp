@@ -12,10 +12,17 @@ Created By:
 /* The idea for this came from Aetherim and the IL2CPP Reverse Engineering Guide:
  * - https://github.com/Toxocious/Aetherim/
  * - https://github.com/jadis0x/il2cpp-reverse-engineering-guide
- * 
+ *
  * I made this a virtual interface scheme so that plugins don't need [separate] implementations of the IL2CPP stuff.
  * Each object captures the actual pointer coming from the IL2CPP functions, and also stores "this" in a static
  * vector for deleting during shutdown.
+ *
+ * The general way other libraries do it is just cast the pointers from IL2CPP into the desired types, but this
+ * requires each module to have its own knowledge of the internal implementation (including DLL export pointers)
+ * which does not work well across plugin boundaries.
+ *
+ * Also the Aetherim Image class references the first member of the IL2CPP object directly as a const char* name
+ * that is never set. Since we have separate objects now, we must call il2cpp_image_get_name to get the name.
  */
 
 #ifndef GOLFHOOK_IL2CPP_HPP
