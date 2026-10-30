@@ -75,10 +75,12 @@ typedef struct {
 
 /* Struct of vars for GolfHook plugins */
 typedef struct {
-    IL2CPP::IImage* assembly;
+    IL2CPP::IManager* IL2CPP_manager;
+    IL2CPP::IImage* IL2CPP_assembly;        // direct IImage* to the Assembly-CSharp.dll image
 } plugin_vars;
 
-#define GH_ASSEMBLY     (g_pluginvars.assembly)
+#define GH_MANAGER      (g_pluginvars.IL2CPP_manager)
+#define GH_ASSEMBLY     (g_pluginvars.IL2CPP_assembly)
 
 /* Plugin use only */
 

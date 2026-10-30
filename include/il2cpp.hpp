@@ -13,7 +13,9 @@ Created By:
  * - https://github.com/Toxocious/Aetherim/
  * - https://github.com/jadis0x/il2cpp-reverse-engineering-guide
  * 
- * I made this a virtual interface scheme so that the plugins don't need [separate] implementations of the IL2CPP stuff.
+ * I made this a virtual interface scheme so that plugins don't need [separate] implementations of the IL2CPP stuff.
+ * Each object captures the actual pointer coming from the IL2CPP functions, and also stores "this" in a static
+ * vector for deleting during shutdown.
  */
 
 #ifndef GOLFHOOK_IL2CPP_HPP
@@ -24,62 +26,63 @@ Created By:
 
 namespace IL2CPP {
     bool initialize();
+    void shutdown();
 
     class IMethod {
         public:
-            virtual void* invoke_static(void** params = nullptr) const;
-            virtual const void* invoke(void* obj, void** params = nullptr);
-            virtual uint32_t get_param_count() const;
-            virtual const char* get_param_name(int index) const;
-            virtual const char* get_param_type(int index) const;
-            virtual bool is_generic() const;
-            virtual bool is_inflated() const;
-            virtual bool is_instance() const;
+            virtual void* invoke_static(void** params = nullptr) const = 0;
+            virtual const void* invoke(void* obj, void** params = nullptr) = 0;
+            virtual uint32_t get_param_count() const = 0;
+            virtual const char* get_param_name(int index) const = 0;
+            virtual const char* get_param_type(int index) const = 0;
+            virtual bool is_generic() const = 0;
+            virtual bool is_inflated() const = 0;
+            virtual bool is_instance() const = 0;
             virtual const char* get_name() const = 0;
     };
 
     class IField {
         public:
-            virtual void* get_as_static() const;
-            virtual void* set_static_value(void* value) const;
-            virtual size_t get_offset() const;
-            virtual void* get_object(const void* obj) const;
-            virtual void* get_type() const;
-            virtual const char* get_attribute() const;
+            virtual void* get_as_static() const = 0;
+            virtual void* set_static_value(void* value) const = 0;
+            virtual size_t get_offset() const = 0;
+            virtual void* get_object(const void* obj) const = 0;
+            virtual void* get_type() const = 0;
+            virtual const char* get_attribute() const = 0;
             virtual const char* get_name() const = 0;
     };
 
     class IClass {
         public:
-            virtual IMethod* get_method(const char* name, int argc = 0) const;
-            virtual IField* get_field(const char* name) const;
-            virtual std::vector<IField*> get_fields() const;
-            virtual IClass* get_nested_class(const char* name) const;
+            virtual IMethod* get_method(const char* name, int argc = 0) const = 0;
+            virtual IField* get_field(const char* name) const = 0;
+            virtual std::vector<IField*> get_fields() const = 0;
+            virtual IClass* get_nested_class(const char* name) const = 0;
             virtual const char* get_name() const = 0;
     };
 
     class IType {
         public:
-            virtual IClass* get_class() const;
-            virtual void* get_object() const;
-            virtual int get_type();
-            virtual uint32_t get_attributes() const;
-            virtual bool compare_type(IType* type);
-            virtual bool is_by_ref();
+            virtual IClass* get_class() const = 0;
+            virtual void* get_object() const = 0;
+            virtual int get_type() = 0;
+            virtual uint32_t get_attributes() const = 0;
+            virtual bool compare_type(IType* type) = 0;
+            virtual bool is_by_ref() = 0;
             virtual const char* get_name() const = 0;
     };
 
     class IImage {
         public:
-            virtual IClass* get_class(const char* name, const char* name_space = "") const;
-            virtual std::vector<IClass*> get_classes() const;
+            virtual IClass* get_class(const char* name, const char* name_space = "") const = 0;
+            virtual std::vector<IClass*> get_classes() const = 0;
             virtual const char* get_name() const = 0;
     };
 
     class IManager {
         public:
-            virtual IImage* get_image(const char* name) const;
-            virtual std::vector<IImage*> get_images() const;
+            virtual IImage* get_image(const char* name) const = 0;
+            virtual std::vector<IImage*> get_images() const = 0;
             virtual bool is_debugger_attached() const = 0;
     };
 
@@ -88,7 +91,6 @@ namespace IL2CPP {
             std::vector<IImage*> m_images;
         public:
             Manager();
-            virtual ~Manager();
 
             virtual IImage* get_image(const char* name) const;
             virtual std::vector<IImage*> get_images() const;
@@ -104,20 +106,20 @@ namespace IL2CPP {
 #define FIELD_ATTRIBUTE_FAMILY              0x0004
 #define FIELD_ATTRIBUTE_FAM_OR_ASSEM        0x0005
 #define FIELD_ATTRIBUTE_PUBLIC              0x0006
-
-#define FIELD_ATTRIBUTE_STATIC         0x0010
-#define FIELD_ATTRIBUTE_INIT_ONLY      0x0020
-#define FIELD_ATTRIBUTE_LITERAL        0x0040
-#define FIELD_ATTRIBUTE_NOT_SERIALIZED 0x0080
-#define FIELD_ATTRIBUTE_SPECIAL_NAME   0x0200
-#define FIELD_ATTRIBUTE_PINVOKE_IMPL   0x2000
+    
+#define FIELD_ATTRIBUTE_STATIC              0x0010
+#define FIELD_ATTRIBUTE_INIT_ONLY           0x0020
+#define FIELD_ATTRIBUTE_LITERAL             0x0040
+#define FIELD_ATTRIBUTE_NOT_SERIALIZED      0x0080
+#define FIELD_ATTRIBUTE_SPECIAL_NAME        0x0200
+#define FIELD_ATTRIBUTE_PINVOKE_IMPL        0x2000
 
 // For runtime use only
-#define FIELD_ATTRIBUTE_RESERVED_MASK     0x9500
-#define FIELD_ATTRIBUTE_RT_SPECIAL_NAME   0x0400
-#define FIELD_ATTRIBUTE_HAS_FIELD_MARSHAL 0x1000
-#define FIELD_ATTRIBUTE_HAS_DEFAULT       0x8000
-#define FIELD_ATTRIBUTE_HAS_FIELD_RVA     0x0100
+#define FIELD_ATTRIBUTE_RESERVED_MASK       0x9500
+#define FIELD_ATTRIBUTE_RT_SPECIAL_NAME     0x0400
+#define FIELD_ATTRIBUTE_HAS_FIELD_MARSHAL   0x1000
+#define FIELD_ATTRIBUTE_HAS_DEFAULT         0x8000
+#define FIELD_ATTRIBUTE_HAS_FIELD_RVA       0x0100
 
 // Method Attributes (22.1.9)
 #define METHOD_IMPL_ATTRIBUTE_CODE_TYPE_MASK 0x0003

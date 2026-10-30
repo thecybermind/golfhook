@@ -12,6 +12,8 @@ Created By:
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <string>
+#include <map>
+#include <memory>
 
 #include "il2cpp.hpp"
 #include "log.hpp"
@@ -21,6 +23,7 @@ Created By:
 
 
 namespace GolfHook {
+    std::unique_ptr<IL2CPP::Manager> Manager;
     IL2CPP::IImage* Assembly;
 
     std::map<FARPROC, FARPROC> hook_map_proc;
@@ -37,21 +40,20 @@ namespace GolfHook {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() returned " << ret << "\n";
 
         // at this point, the Unity engine has initialized IL2CPP, so begin looking inside
-
         GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing IL2CPP.\n";
         IL2CPP::initialize();
-        const auto manager = std::make_unique<IL2CPP::Manager>();
+        Manager = std::make_unique<IL2CPP::Manager>();
 
         // output some debug info about the IL2CPP environment
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (manager->is_debugger_attached() ? "true" : "false") << "\n";
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP image count: " << manager->get_images().size() << "\n";
-        for (auto i : manager->get_images()) {
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (Manager->is_debugger_attached() ? "true" : "false") << "\n";
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP image count: " << Manager->get_images().size() << "\n";
+        for (auto i : Manager->get_images()) {
             if (!i)
                 continue;
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tIL2CPP image: \"" << i->get_name() << "\"\n";
         }
 
-        Assembly = manager->get_image("Assembly-CSharp.dll");
+        Assembly = Manager->get_image("Assembly-CSharp.dll");
         if (!Assembly) {
             GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load Assembly-CSharp IL2CPP image. Shutting down.\n";
             return 0;
@@ -96,6 +98,9 @@ namespace GolfHook {
         orig(); // call original function
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() returned.\n";
 
+        GHLOG(GH_LOG_INFO, GH_TAG) << "Shutting down IL2CPP.\n";
+        IL2CPP::shutdown();
+            
         // unload plugins
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "Unloading plugins...\n";
         for (Plugin& p : g_plugins) {

@@ -15,10 +15,12 @@ Created By:
 #include <windef.h>
 #include <map>
 #include <string>
+#include <memory>
 
 #include "il2cpp.hpp"
 
 namespace GolfHook {
+    extern std::unique_ptr<IL2CPP::Manager> Manager;
     extern IL2CPP::IImage* Assembly;
 
     extern std::map<FARPROC, FARPROC> hook_map_proc;

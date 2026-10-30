@@ -86,4 +86,15 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="..\readme.md">
+      <Filter>Other</Filter>
+    </None>
+    <None Include="cpp.hint">
+      <Filter>Other</Filter>
+    </None>
+  </ItemGroup>
 </Project>

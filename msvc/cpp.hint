@@ -1,0 +1,3 @@
+#define C_DLLEXPORT
+#define IL2CPP_API
+#define IL2CPP_GET_ADDR
