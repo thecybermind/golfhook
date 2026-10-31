@@ -36,6 +36,10 @@ Created By:
 #include "log.hpp"
 
 
+/*
+TODO: maybe switch the classes to the same as other libraries where they are just a type on top of the IL2CPP pointer.
+And have a separate virtual interface for interacting with these objects?
+*/
 #define IL2CPP_API( name, ret_type, args )         \
   ret_type (* name) args = nullptr;
 
@@ -190,7 +194,7 @@ namespace IL2CPP {
         IL2CPP_GET_ADDR(get_class_has_parent, "il2cpp_has_parent", hGameAssembly);
         IL2CPP_GET_ADDR(get_class_get_parent, "il2cpp_class_get_parent", hGameAssembly);
         IL2CPP_GET_ADDR(get_class_is_subclass_of, "il2cpp_class_is_subclass_of", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_from_type, "il2cpp_class_from_IL2CPP_type", hGameAssembly);
+        IL2CPP_GET_ADDR(get_class_from_type, "il2cpp_class_from_il2cpp_type", hGameAssembly);
         IL2CPP_GET_ADDR(get_class_event_info, "il2cpp_class_get_events", hGameAssembly);
         IL2CPP_GET_ADDR(get_class_interfaces, "il2cpp_class_get_interfaces", hGameAssembly);
         IL2CPP_GET_ADDR(get_class_properties, "il2cpp_class_get_properties", hGameAssembly);
@@ -245,13 +249,15 @@ namespace IL2CPP {
 
     class Method : public IMethod {
         private:
-            void* obj;
+            void* m_obj;
+            const char* m_name;
             static std::vector<IMethod*> objects;
         public:
             Method() = delete;
-            Method(void* obj) : obj(obj) { objects.push_back(this); }
+            Method(void* obj) : m_obj(obj), m_name(nullptr) { objects.push_back(this); }
 
             static void Cleanup() {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Method objects.\n";
                 for (auto i : objects) {
                     delete i;
                 }
@@ -259,12 +265,12 @@ namespace IL2CPP {
             }
 
             virtual void* invoke_static(void** params = nullptr) const {
-                if (!IL2CPP::method_call || !obj)
+                if (!IL2CPP::method_call || !m_obj)
                     return nullptr;
 
                 void* exc = nullptr;
 
-                const auto result = IL2CPP::method_call(obj, nullptr, params, &exc);
+                const auto result = IL2CPP::method_call(m_obj, nullptr, params, &exc);
 
                 if (exc != nullptr) {
                     GHLOG(GH_LOG_WARNING, GH_TAG) << "Method::invoke_static() raised exception: " << exc << "\n";
@@ -274,12 +280,12 @@ namespace IL2CPP {
             }
 
             virtual const void* invoke(void* self, void** params = nullptr) {
-                if (!IL2CPP::method_call || !obj)
+                if (!IL2CPP::method_call || !m_obj)
                     return nullptr;
 
                 void* exc = nullptr;
 
-                const auto result = IL2CPP::method_call(obj, self, params, &exc);
+                const auto result = IL2CPP::method_call(m_obj, self, params, &exc);
 
                 if (exc != nullptr) {
                     GHLOG(GH_LOG_WARNING, GH_TAG) << "Method::invoke(" << self << ") raised exception: " << exc << "\n";
@@ -289,52 +295,65 @@ namespace IL2CPP {
             }
 
             virtual uint32_t get_param_count() const {
-                if (!IL2CPP::get_method_param_count || !obj)
+                if (!IL2CPP::get_method_param_count || !m_obj)
                     return -1;
 
-                return IL2CPP::get_method_param_count(obj);
+                return IL2CPP::get_method_param_count(m_obj);
             }
 
             virtual const char* get_param_name(int index) const {
-                if (!IL2CPP::get_method_param_name || !obj)
+                if (!IL2CPP::get_method_param_name || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_method_param_name(obj, index);
+                return IL2CPP::get_method_param_name(m_obj, index);
             }
 
             virtual const char* get_param_type(int index) const {
-                if (!IL2CPP::get_method_param_type || !obj)
+                if (!IL2CPP::get_method_param_type || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_method_param_type(obj, index);
+                return IL2CPP::get_method_param_type(m_obj, index);
             }
 
             virtual bool is_generic() const {
-                if (!IL2CPP::get_method_is_generic || !obj)
+                if (!IL2CPP::get_method_is_generic || !m_obj)
                     return false;
 
-                return IL2CPP::get_method_is_generic(obj);
+                return IL2CPP::get_method_is_generic(m_obj);
             }
 
             virtual bool is_inflated() const {
-                if (!IL2CPP::get_method_is_inflated || !obj)
+                if (!IL2CPP::get_method_is_inflated || !m_obj)
                     return false;
 
-                return IL2CPP::get_method_is_inflated(obj);
+                return IL2CPP::get_method_is_inflated(m_obj);
             }
 
             virtual bool is_instance() const {
-                if (!IL2CPP::get_method_is_instance || !obj)
+                if (!IL2CPP::get_method_is_instance || !m_obj)
                     return false;
 
-                return IL2CPP::get_method_is_instance(obj);
+                return IL2CPP::get_method_is_instance(m_obj);
+            }
+
+            virtual const char* get_name() {
+                if (!IL2CPP::get_method_name || !m_obj)
+                    return nullptr;
+
+                if (m_name)
+                    return m_name;
+
+                return m_name = IL2CPP::get_method_name(m_obj);
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_method_name || !obj)
-                    return nullptr;;
+                if (!IL2CPP::get_method_name || !m_obj)
+                    return nullptr;
 
-                return IL2CPP::get_method_name(obj);
+                if (m_name)
+                    return m_name;
+
+                return IL2CPP::get_method_name(m_obj);
             }
     };  // class Method
     std::vector<IMethod*> Method::objects;
@@ -342,13 +361,15 @@ namespace IL2CPP {
 
     class Field : public IField {
         private:
-            void* obj;
+            void* m_obj;
+            const char* m_name;
             static std::vector<IField*> objects;
         public:
             Field() = delete;
-            Field(void* obj) : obj(obj) { objects.push_back(this); }
+            Field(void* obj) : m_obj(obj), m_name(nullptr) { objects.push_back(this); }
 
             static void Cleanup() {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Field objects.\n";
                 for (auto i : objects) {
                     delete i;
                 }
@@ -356,46 +377,41 @@ namespace IL2CPP {
             }
 
             virtual void* get_static_value() const {
-                if (!IL2CPP::get_static_field || !obj)
+                if (!IL2CPP::get_static_field || !m_obj)
                     return nullptr;
 
                 void* val = NULL;
 
-                IL2CPP::get_static_field(obj, &val);
+                IL2CPP::get_static_field(m_obj, &val);
 
                 return val;
             }
 
             virtual void* set_static_value(void* value) const {
-                if (!IL2CPP::set_static_field || !obj)
+                if (!IL2CPP::set_static_field || !m_obj)
                     return nullptr;
 
-                return IL2CPP::set_static_field(obj, value);
+                return IL2CPP::set_static_field(m_obj, value);
             }
 
             virtual size_t get_offset() const {
-                if (!IL2CPP::get_field_offset || !obj)
+                if (!IL2CPP::get_field_offset || !m_obj)
                     return 0x0;
 
-                return IL2CPP::get_field_offset(obj);
+                return IL2CPP::get_field_offset(m_obj);
             }
             
             virtual void* get_object(const void* self) const {
-                if (!IL2CPP::get_field_object || !obj)
+                if (!IL2CPP::get_field_object || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_field_object(obj, self);
+                return IL2CPP::get_field_object(m_obj, self);
             }
 
-            virtual void* get_type() const {
-                if (!IL2CPP::get_field_type || !obj)
-                    return nullptr;
-
-                return IL2CPP::get_field_type(obj);
-            }
+            virtual IType* get_type() const;
 
             virtual const char* get_attribute() const {
-                if (!IL2CPP::get_field_flags || !obj)
+                if (!IL2CPP::get_field_flags || !m_obj)
                     return nullptr;
 
                 // static buffer to return but need to re-get data every time
@@ -403,7 +419,7 @@ namespace IL2CPP {
                 static char attr[100];
                 memset(attr, 0, sizeof(attr));
 
-                auto attrs = IL2CPP::get_field_flags(obj);
+                auto attrs = IL2CPP::get_field_flags(m_obj);
 
                 auto access = attrs & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
                 switch (access) {
@@ -438,11 +454,24 @@ namespace IL2CPP {
                 return attr;
             }
 
-            virtual const char* get_name() const {
-                if (!IL2CPP::get_field_name || !obj)
+            virtual const char* get_name() {
+                if (!IL2CPP::get_field_name || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_field_name(obj);
+                if (m_name)
+                    return m_name;
+
+                return m_name = IL2CPP::get_field_name(m_obj);
+            }
+
+            virtual const char* get_name() const {
+                if (!IL2CPP::get_field_name || !m_obj)
+                    return nullptr;
+
+                if (m_name)
+                    return m_name;
+
+                return IL2CPP::get_field_name(m_obj);
             }
     };  // class Field
     std::vector<IField*> Field::objects;
@@ -450,13 +479,16 @@ namespace IL2CPP {
 
     class Class : public IClass {
         private:
-            void* obj;
+            void* m_obj;
+            const char* m_name;
+            std::vector<IField*> m_fields;
             static std::vector<IClass*> objects;
         public:
             Class() = delete;
-            Class(void* obj) : obj(obj) { objects.push_back(this); }
+            Class(void* obj) : m_obj(obj), m_fields{}, m_name(nullptr) { objects.push_back(this); }
 
             static void Cleanup() {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Class objects.\n";
                 for (auto i : objects) {
                     delete i;
                 }
@@ -464,54 +496,53 @@ namespace IL2CPP {
             }
 
             virtual IMethod* get_method(const char* name, int argc = 0) const {
-                if (!IL2CPP::get_method || !obj)
+                if (!IL2CPP::get_method || !m_obj)
                     return nullptr;
 
-                auto method = IL2CPP::get_method(obj, name, argc);
+                auto method = IL2CPP::get_method(m_obj, name, argc);
 
                 return new Method(method);
             }
 
             virtual IField* get_field(const char* name) const {
-                if (!IL2CPP::get_field || !obj)
+                if (!IL2CPP::get_field || !m_obj)
                     return nullptr;
 
-                auto field = IL2CPP::get_field(obj, name);
+                auto field = IL2CPP::get_field(m_obj, name);
 
                 return new Field(field);
             }
 
-            virtual std::vector<IField*> get_fields() const {
-                static std::vector<IField*> m_fields{};
+            virtual std::vector<IField*> get_fields() {
                 if (m_fields.size())
                     return m_fields;
 
-                if (!IL2CPP::get_field_count || !IL2CPP::get_fields || !obj)
+                if (!IL2CPP::get_field_count || !IL2CPP::get_fields || !m_obj)
                     return m_fields;
 
-                const size_t count = IL2CPP::get_field_count(obj);
+                const size_t count = IL2CPP::get_field_count(m_obj);
                 if (count)
-                    m_fields.resize(count);
+                    m_fields.reserve(count);
 
                 void* iter = NULL;
                 void* field = nullptr;
 
                 size_t index = 0;
 
-                while (field = IL2CPP::get_fields(obj, &iter)) {
-                    m_fields[index++] = new Field(field);
+                while (field = IL2CPP::get_fields(m_obj, &iter)) {
+                    m_fields.push_back(new Field(field));
                 }
 
                 return m_fields;
             }
 
             virtual IClass* get_nested_class(const char* name) const {
-                if (!IL2CPP::get_nested_types || !IL2CPP::get_class_name || !obj)
+                if (!IL2CPP::get_nested_types || !IL2CPP::get_class_name || !m_obj)
                     return nullptr;
 
                 void* iter = NULL;
 
-                while (auto type = IL2CPP::get_nested_types(obj, &iter)) {
+                while (auto type = IL2CPP::get_nested_types(m_obj, &iter)) {
                     const auto class_name = IL2CPP::get_class_name(type);
 
                     if (strcmp(class_name, name) == 0)
@@ -521,11 +552,24 @@ namespace IL2CPP {
                 return nullptr;
             }
 
-            virtual const char* get_name() const {
-                if (!IL2CPP::get_class_name || !obj)
+            virtual const char* get_name() {
+                if (!IL2CPP::get_class_name || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_class_name(obj);
+                if (m_name)
+                    return m_name;
+
+                return m_name = IL2CPP::get_class_name(m_obj);
+            }
+
+            virtual const char* get_name() const {
+                if (!IL2CPP::get_class_name || !m_obj)
+                    return nullptr;
+
+                if (m_name)
+                    return m_name;
+
+                return IL2CPP::get_class_name(m_obj);
             }
     };  // class Class
     std::vector<IClass*> Class::objects;
@@ -533,13 +577,15 @@ namespace IL2CPP {
 
     class Type : public IType {
         private:
-            void* obj;
+            void* m_obj;
+            const char* m_name;
             static std::vector<IType*> objects;
         public:
             Type() = delete;
-            Type(void* obj) : obj(obj) { objects.push_back(this); }
+            Type(void* obj) : m_obj(obj), m_name(nullptr) { objects.push_back(this); }
 
             static void Cleanup() {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Type objects.\n";
                 for (auto i : objects) {
                     delete i;
                 }
@@ -547,71 +593,101 @@ namespace IL2CPP {
             }
 
             virtual IClass* get_class() const {
-                if (!IL2CPP::get_type_class || !obj)
+                if (!IL2CPP::get_type_class || !m_obj)
                     return nullptr;
 
-                auto type = IL2CPP::get_type_class(obj);
+                auto type = IL2CPP::get_type_class(m_obj);
 
                 return new Class(type);
             }
 
             virtual void* get_object() const {
-                if (!IL2CPP::get_type_object || !obj)
+                if (!IL2CPP::get_type_object || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_type_object(obj);
+                return IL2CPP::get_type_object(m_obj);
             }
 
             virtual int get_type() const {
-                if (!IL2CPP::get_type_type || !obj)
+                if (!IL2CPP::get_type_type || !m_obj)
                     return -1;
 
-                return IL2CPP::get_type_type(obj);
+                return IL2CPP::get_type_type(m_obj);
             }
 
             virtual uint32_t get_attributes() const {
-                if (!IL2CPP::get_type_attributes || !obj)
+                if (!IL2CPP::get_type_attributes || !m_obj)
                     return 0;
 
-                return IL2CPP::get_type_attributes(obj);
+                return IL2CPP::get_type_attributes(m_obj);
             }
 
             virtual bool compare_type(IType* other) {
-                if (!IL2CPP::get_type_equals || !obj)
+                if (!IL2CPP::get_type_equals || !m_obj)
                     return false;
 
                 // we need to look into other's object
                 Type* _other = (Type*)other;
 
-                return IL2CPP::get_type_equals(obj, _other->obj);
+                return IL2CPP::get_type_equals(m_obj, _other->m_obj);
             }
 
-            virtual bool is_by_ref() {
-                if (!IL2CPP::get_type_is_byref || !obj)
+            virtual bool is_by_ref() const {
+                if (!IL2CPP::get_type_is_byref || !m_obj)
                     return false;
 
-                return IL2CPP::get_type_is_byref(obj);
+                return IL2CPP::get_type_is_byref(m_obj);
+            }
+
+            virtual const char* get_name() {
+                if (!IL2CPP::get_type_name || !m_obj)
+                    return nullptr;
+
+                if (m_name)
+                    return m_name;
+
+                return m_name = IL2CPP::get_type_name(m_obj);
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_type_name || !obj)
+                if (!IL2CPP::get_type_name || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_type_name(obj);
+                if (m_name)
+                    return m_name;
+
+                return IL2CPP::get_type_name(m_obj);
             }
     };  // class Type
     std::vector<IType*> Type::objects;
 
 
+    // moved after definition of Type since it creates a Type
+    IType* Field::get_type() const {
+        if (!IL2CPP::get_field_type || !m_obj)
+            return nullptr;
+
+        auto type = IL2CPP::get_field_type(m_obj);
+
+        return new Type(type);
+    }
+
+    
+    struct NameCast {
+        const char* m_name;
+    };
+
     class Image : public IImage {
         private:
-            void* obj;
+            void* m_obj;
+            std::vector<IClass*> m_classes;
             static std::vector<IImage*> objects;
         public:
             Image() = delete;
-            Image(void* obj) : obj(obj) { objects.push_back(this); }
+            Image(void* obj) : m_obj(obj), m_classes{} { objects.push_back(this); }
 
             static void Cleanup() {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Image objects.\n";
                 for (auto i : objects) {
                     delete i;
                 }
@@ -619,29 +695,26 @@ namespace IL2CPP {
             }
 
             virtual IClass* get_class(const char* name, const char* name_space = "") const {
-                if (!IL2CPP::get_class || !obj)
+                if (!IL2CPP::get_class || !m_obj)
                     return nullptr;
 
-                auto _class = IL2CPP::get_class(obj, name_space, name);
+                auto _class = IL2CPP::get_class(m_obj, name_space, name);
                 return new Class(_class);
             }
 
-            virtual std::vector<IClass*> get_classes() const {
-                static std::vector<IClass*> m_classes{};
+            virtual std::vector<IClass*>& get_classes() {
                 if (m_classes.size())
                     return m_classes;
 
-                if (!IL2CPP::get_class_count || !IL2CPP::get_class_from_image || !IL2CPP::get_class_name || !obj)
+                if (!IL2CPP::get_class_count || !IL2CPP::get_class_from_image || !IL2CPP::get_class_name || !m_obj)
                     return m_classes;
 
-                size_t count = IL2CPP::get_class_count(obj);
+                size_t count = IL2CPP::get_class_count(m_obj);
                 if (count)
-                    m_classes.resize(count);
-
-                size_t valid_classes = 0;
+                    m_classes.reserve(count);
 
                 for (size_t index = 0U; index < count; ++index) {
-                    auto address = IL2CPP::get_class_from_image(obj, index);
+                    auto address = IL2CPP::get_class_from_image(m_obj, index);
                     if (!address)
                         continue;
 
@@ -652,17 +725,17 @@ namespace IL2CPP {
                     if (!strcmp(name, "<Module>"))
                         continue;
 
-                    m_classes[valid_classes++] = new Class(address);
+                    m_classes.push_back(new Class(address));
                 }
 
                 return m_classes;
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_image_name || !obj)
+                if (!IL2CPP::get_image_name || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_image_name(obj);
+                return ((NameCast*)m_obj)->m_name;
             }
     };  // class Image
     std::vector<IImage*> Image::objects;
@@ -672,9 +745,6 @@ namespace IL2CPP {
 
 
     Manager::~Manager() {
-        for (auto& i : m_images) {
-            delete i;
-        }
         m_images.clear();
     }
 
