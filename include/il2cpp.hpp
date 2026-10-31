@@ -32,7 +32,10 @@ Created By:
 #include <vector>
 
 namespace IL2CPP {
+    // Initialize IL2CPP pointers
     bool initialize();
+
+    // Clean up internal IL2CPP resources
     void shutdown();
 
     class IMethod {
@@ -50,7 +53,7 @@ namespace IL2CPP {
 
     class IField {
         public:
-            virtual void* get_as_static() const = 0;
+            virtual void* get_static_value() const = 0;
             virtual void* set_static_value(void* value) const = 0;
             virtual size_t get_offset() const = 0;
             virtual void* get_object(const void* obj) const = 0;
@@ -99,6 +102,8 @@ namespace IL2CPP {
         public:
             Manager();
             ~Manager();
+
+            void InitAssemblies();
 
             virtual IImage* get_image(const char* name) const;
             virtual std::vector<IImage*> get_images() const;

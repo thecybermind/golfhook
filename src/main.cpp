@@ -23,7 +23,7 @@ Created By:
 
 
 namespace GolfHook {
-    std::unique_ptr<IL2CPP::Manager> Manager;
+    IL2CPP::Manager Manager;
     IL2CPP::IImage* Assembly;
 
     std::map<FARPROC, FARPROC> hook_map_proc;
@@ -42,18 +42,18 @@ namespace GolfHook {
         // at this point, the Unity engine has initialized IL2CPP, so begin looking inside
         GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing IL2CPP.\n";
         IL2CPP::initialize();
-        Manager = std::make_unique<IL2CPP::Manager>();
+        Manager.InitAssemblies();
 
         // output some debug info about the IL2CPP environment
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (Manager->is_debugger_attached() ? "true" : "false") << "\n";
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP image count: " << Manager->get_images().size() << "\n";
-        for (auto i : Manager->get_images()) {
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (Manager.is_debugger_attached() ? "true" : "false") << "\n";
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP image count: " << Manager.get_images().size() << "\n";
+        for (auto i : Manager.get_images()) {
             if (!i)
                 continue;
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tIL2CPP image: \"" << i->get_name() << "\"\n";
         }
 
-        Assembly = Manager->get_image("Assembly-CSharp.dll");
+        Assembly = Manager.get_image("Assembly-CSharp.dll");
         if (!Assembly) {
             GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load Assembly-CSharp IL2CPP image. Shutting down.\n";
             return 0;

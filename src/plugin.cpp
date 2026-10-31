@@ -146,7 +146,7 @@ bool Plugin::Load(std::string file) {
     // now fill the plugin's function and variable tables
     *this->pluginfuncs = s_plugin_funcs;
     *this->pluginvars = s_plugin_vars;
-    this->pluginvars->IL2CPP_manager = GolfHook::Manager.get();
+    this->pluginvars->IL2CPP_manager = &GolfHook::Manager;
     this->pluginvars->IL2CPP_assembly = GolfHook::Assembly;
 
     // find remaining GolfHook api functions or fail

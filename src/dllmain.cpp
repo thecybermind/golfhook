@@ -36,7 +36,7 @@ HMODULE hMe = nullptr;      // this DLL handle
 static struct {
     const char* name;
     FARPROC proc;
-} procmap[] = {
+} hooks[] = {
     { "il2cpp_init", (FARPROC)GolfHook::il2cpp_init_hook },
     { "il2cpp_shutdown", (FARPROC)GolfHook::il2cpp_shutdown_hook },
 };
@@ -54,13 +54,15 @@ FARPROC WINAPI UnityPlayer_GetProcAddress_hook(HMODULE hModule, LPCSTR lpProcNam
         return ret;
 
     // hook functions from GameAssembly
-    for (auto& i : procmap) {
+    for (auto& i : hooks) {
         if (strcmp(lpProcName, i.name) == 0) {
             GHLOG(GH_LOG_DEBUG, GH_TAG) << "GetProcAddress(\"GameAssembly.dll\", \"" << lpProcName << "\") called.\n";
 
             // store original pointer in hook maps for lookup in hook functions
             GolfHook::hook_map_proc[i.proc] = ret;
             GolfHook::hook_map_name[i.name] = ret;
+
+            // return our hook function address instead
             return i.proc;
         }
     }

@@ -20,7 +20,7 @@ Created By:
 #include "il2cpp.hpp"
 
 namespace GolfHook {
-    extern std::unique_ptr<IL2CPP::Manager> Manager;
+    extern IL2CPP::Manager Manager;
     extern IL2CPP::IImage* Assembly;
 
     extern std::map<FARPROC, FARPROC> hook_map_proc;

@@ -355,7 +355,7 @@ namespace IL2CPP {
                 objects.clear();
             }
 
-            virtual void* get_as_static() const {
+            virtual void* get_static_value() const {
                 if (!IL2CPP::get_static_field || !obj)
                     return nullptr;
 
@@ -668,12 +668,23 @@ namespace IL2CPP {
     std::vector<IImage*> Image::objects;
 
     
-    Manager::Manager() {
+    Manager::Manager() : m_images({}) {}
+
+
+    Manager::~Manager() {
+        for (auto& i : m_images) {
+            delete i;
+        }
+        m_images.clear();
+    }
+
+    void Manager::InitAssemblies() {
         (void)initialize();
-        size_t count = 0U;
 
         const auto domain = IL2CPP::get_domain();
         IL2CPP::thread_attach(domain);
+
+        size_t count = 0U;
 
         const auto assemblies = IL2CPP::get_assemblies(domain, &count);
 
@@ -682,14 +693,6 @@ namespace IL2CPP {
             if (image)
                 m_images.push_back(new Image(image));
         }
-    }   // Manager::Manager()
-
-
-    Manager::~Manager() {
-        for (auto& i : m_images) {
-            delete i;
-        }
-        m_images.clear();
     }
 
 
