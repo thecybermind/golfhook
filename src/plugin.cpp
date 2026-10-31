@@ -43,7 +43,8 @@ static plugin_funcs s_plugin_funcs = {
 
 // Variables made available to plugins
 plugin_vars s_plugin_vars = {
-    nullptr, // assembly
+    &GolfHook::Manager, // IL2CPP_manager
+    nullptr,            // IL2CPP_assembly
 };
 
 
@@ -146,8 +147,8 @@ bool Plugin::Load(std::string file) {
     // now fill the plugin's function and variable tables
     *this->pluginfuncs = s_plugin_funcs;
     *this->pluginvars = s_plugin_vars;
-    this->pluginvars->IL2CPP_manager = &GolfHook::Manager;
-    this->pluginvars->IL2CPP_assembly = GolfHook::Assembly;
+    // get any updates to pluginvars that may have happened after static initialization
+    UpdateVars();
 
     // find remaining GolfHook api functions or fail
     if (!(this->GolfHook_Attach = (Plugin::plugin_attach)Util::dll_symbol(this->dll, "GolfHook_Attach"))) {
@@ -187,7 +188,7 @@ void Plugin::Unload() {
 
 
 void Plugin::UpdateVars() {
-    return;
+    this->pluginvars->IL2CPP_assembly = GolfHook::Assembly;
 }
 
 

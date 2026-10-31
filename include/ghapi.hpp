@@ -55,7 +55,7 @@ typedef plugin_info* plugin_id;
 
 /* Severity level for GH_WRITEGHLOG */
 enum {
-    GHLOG_TRACE,    // Lowest level, only for detailed debugging
+    GHLOG_TRACE,    // Lowest level, only for detailed call-trace level debugging
     GHLOG_DEBUG,    // Debugging information
     GHLOG_INFO,     // Normal information, displayed to game console
     GHLOG_NOTICE,   // Something of note
@@ -66,21 +66,21 @@ enum {
 
 /* Prototype struct for GolfHook plugin utility functions */
 typedef struct {
-    void (*pfnWriteGHLog)(plugin_id plid, int severity, const char* fmt, ...);      // Write to the GolfHook log
-    const char* (*pfnVarArgs)(plugin_id plid, const char* fmt, ...);                // Simple vsprintf helper with rotating buffer
+    void (*WriteGHLog)(plugin_id plid, int severity, const char* fmt, ...); // Write to the GolfHook log with given severity
+    const char* (*VarArgs)(plugin_id plid, const char* fmt, ...);           // Simple vsprintf helper with rotating buffer
 } plugin_funcs;
 
-#define GH_WRITEGHLOG(sev, fmt, ...)    (g_pluginfuncs.pfnWriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__)   // Write to the GolfHook log
-#define GH_VARARGS(fmt, ...)            (g_pluginfuncs.pfnVarArgs)(PLID, fmt, __VA_ARGS__)              // Simple vsprintf helper
+#define GH_WRITEGHLOG(sev, fmt, ...)    (g_pluginfuncs.WriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__)  // Write to the GolfHook log with given severity
+#define GH_VARARGS(fmt, ...)            (g_pluginfuncs.VarArgs)(PLID, fmt, __VA_ARGS__)             // Simple vsprintf helper with rotating buffer
 
 /* Struct of vars for GolfHook plugins */
 typedef struct {
-    IL2CPP::IManager* IL2CPP_manager;
-    IL2CPP::IImage* IL2CPP_assembly;        // direct IImage* to the Assembly-CSharp.dll image
+    IL2CPP::IManager* IL2CPP_manager;                   // IManager* to the IL2CPP assembly manager
+    IL2CPP::IImage* IL2CPP_assembly;                    // IImage* to the Assembly-CSharp.dll image
 } plugin_vars;
 
-#define GH_MANAGER      (g_pluginvars.IL2CPP_manager)
-#define GH_ASSEMBLY     (g_pluginvars.IL2CPP_assembly)
+#define GH_MANAGER      (g_pluginvars.IL2CPP_manager)   // IManager* to the IL2CPP assembly manager
+#define GH_ASSEMBLY     (g_pluginvars.IL2CPP_assembly)  // IImage* to the Assembly-CSharp.dll image
 
 /* Plugin use only */
 
