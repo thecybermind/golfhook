@@ -87,14 +87,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\LICENSE">
-      <Filter>Other</Filter>
-    </None>
-    <None Include="..\readme.md">
-      <Filter>Other</Filter>
-    </None>
-    <None Include="cpp.hint">
-      <Filter>Other</Filter>
-    </None>
+    <None Include="..\LICENSE" />
+    <None Include="..\readme.md" />
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

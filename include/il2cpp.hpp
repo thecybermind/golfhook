@@ -54,37 +54,37 @@ namespace IL2CPP {
 
     class IType;
     class IField {
-    public:
-        virtual void* get_static_value() const = 0;
-        virtual void* set_static_value(void* value) const = 0;
-        virtual size_t get_offset() const = 0;
-        virtual void* get_object(const void* obj) const = 0;
-        virtual IType* get_type() const = 0;
-        virtual const char* get_attribute() const = 0;
-        virtual const char* get_name() = 0;
-        virtual const char* get_name() const = 0;
+        public:
+            virtual void* get_static_value() const = 0;
+            virtual void* set_static_value(void* value) const = 0;
+            virtual size_t get_offset() const = 0;
+            virtual void* get_object(const void* obj) const = 0;
+            virtual IType* get_type() const = 0;
+            virtual const char* get_attribute() const = 0;
+            virtual const char* get_name() = 0;
+            virtual const char* get_name() const = 0;
     };
 
     class IClass {
         public:
             virtual IMethod* get_method(const char* name, int argc = 0) const = 0;
             virtual IField* get_field(const char* name) const = 0;
-            virtual std::vector<IField*> get_fields() = 0;
+            virtual std::vector<IField*>& get_fields() = 0;
             virtual IClass* get_nested_class(const char* name) const = 0;
             virtual const char* get_name() = 0;
             virtual const char* get_name() const = 0;
     };
 
     class IType {
-    public:
-        virtual IClass* get_class() const = 0;
-        virtual void* get_object() const = 0;
-        virtual int get_type() const = 0;
-        virtual uint32_t get_attributes() const = 0;
-        virtual bool compare_type(IType* type) = 0;
-        virtual bool is_by_ref() const = 0;
-        virtual const char* get_name() = 0;
-        virtual const char* get_name() const = 0;
+        public:
+            virtual IClass* get_class() const = 0;
+            virtual void* get_object() const = 0;
+            virtual int get_type() const = 0;
+            virtual uint32_t get_attributes() const = 0;
+            virtual bool compare_type(IType* type) = 0;
+            virtual bool is_by_ref() const = 0;
+            virtual const char* get_name() = 0;
+            virtual const char* get_name() const = 0;
     };
 
     class IImage {
@@ -97,7 +97,7 @@ namespace IL2CPP {
     class IManager {
         public:
             virtual IImage* get_image(const char* name) const = 0;
-            virtual std::vector<IImage*> get_images() const = 0;
+            virtual std::vector<IImage*>& get_images() = 0;
             virtual bool is_debugger_attached() const = 0;
     };
 
@@ -111,7 +111,7 @@ namespace IL2CPP {
             void InitAssemblies();
 
             virtual IImage* get_image(const char* name) const;
-            virtual std::vector<IImage*> get_images() const;
+            virtual std::vector<IImage*>& get_images();
             virtual bool is_debugger_attached() const;
     };
 } // namespace IL2CPP

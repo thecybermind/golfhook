@@ -513,7 +513,7 @@ namespace IL2CPP {
                 return new Field(field);
             }
 
-            virtual std::vector<IField*> get_fields() {
+            virtual std::vector<IField*>& get_fields() {
                 if (m_fields.size())
                     return m_fields;
 
@@ -776,7 +776,7 @@ namespace IL2CPP {
     }
 
 
-    std::vector<IImage*> Manager::get_images() const {
+    std::vector<IImage*>& Manager::get_images() {
         return m_images;
     }
 
