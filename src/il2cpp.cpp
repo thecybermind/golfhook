@@ -398,9 +398,10 @@ namespace IL2CPP {
                 if (!IL2CPP::get_field_flags || !obj)
                     return nullptr;
 
+                // static buffer to return but need to re-get data every time
+                // if we store it in a class member, this can not be a const function
                 static char attr[100];
-                if (attr[0])
-                    return attr;
+                memset(attr, 0, sizeof(attr));
 
                 auto attrs = IL2CPP::get_field_flags(obj);
 
@@ -425,13 +426,13 @@ namespace IL2CPP {
                 }
 
                 if ((attrs & FIELD_ATTRIBUTE_LITERAL) == FIELD_ATTRIBUTE_LITERAL) {
-                    strcpy(attr, "const ");
+                    strcat(attr, "const ");
                 }
                 else if ((attrs & FIELD_ATTRIBUTE_STATIC) == FIELD_ATTRIBUTE_STATIC) {
-                    strcpy(attr, "static ");
+                    strcat(attr, "static ");
                 }
                 else if ((attrs & FIELD_ATTRIBUTE_INIT_ONLY) == FIELD_ATTRIBUTE_INIT_ONLY) {
-                    strcpy(attr, "readonly ");
+                    strcat(attr, "readonly ");
                 }
 
                 return attr;
@@ -575,11 +576,14 @@ namespace IL2CPP {
                 return IL2CPP::get_type_attributes(obj);
             }
 
-            virtual bool compare_type(IType* type) {
+            virtual bool compare_type(IType* other) {
                 if (!IL2CPP::get_type_equals || !obj)
                     return false;
 
-                return IL2CPP::get_type_equals(obj, ((Type*)type)->obj);
+                // we need to look into other's object
+                Type* _other = (Type*)other;
+
+                return IL2CPP::get_type_equals(obj, _other->obj);
             }
 
             virtual bool is_by_ref() {
