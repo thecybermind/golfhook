@@ -28,7 +28,8 @@ Created By:
 #include "version.h"
 
 
-#pragma comment(lib, "..\\lib\\MinHook.x64.lib")
+// #pragma comment(lib, "..\\lib\\MinHook.x64.lib")
+#pragma comment(lib, "..\\lib\\libMinHook.x64.lib")
 
 HMODULE hMe = nullptr;      // this DLL handle
 

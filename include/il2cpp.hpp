@@ -69,7 +69,8 @@ namespace IL2CPP {
         public:
             virtual IMethod* get_method(const char* name, int argc = 0) const = 0;
             virtual IField* get_field(const char* name) const = 0;
-            virtual std::vector<IField*>& get_fields() = 0;
+            virtual std::vector<IField*> get_fields() = 0;
+            virtual size_t get_field_count() const = 0;
             virtual IClass* get_nested_class(const char* name) const = 0;
             virtual const char* get_name() = 0;
             virtual const char* get_name() const = 0;
@@ -90,7 +91,8 @@ namespace IL2CPP {
     class IImage {
         public:
             virtual IClass* get_class(const char* name, const char* name_space = "") const = 0;
-            virtual std::vector<IClass*>& get_classes() = 0;
+            virtual std::vector<IClass*> get_classes() = 0;
+            virtual size_t get_class_count() const = 0;
             virtual const char* get_name() const = 0;
     };
 

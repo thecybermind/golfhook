@@ -455,23 +455,39 @@ namespace IL2CPP {
             }
 
             virtual const char* get_name() {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name entered\n";
+
                 if (!IL2CPP::get_field_name || !m_obj)
                     return nullptr;
 
-                if (m_name)
-                    return m_name;
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field object and get_field_name valid\n";
 
-                return m_name = IL2CPP::get_field_name(m_obj);
+                if (m_name) {
+                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name returning cached name: " << m_name << "\n";
+                    return m_name;
+                }
+
+                m_name = IL2CPP::get_field_name(m_obj);
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name returning: " << m_name << "\n";
+                return m_name;
             }
 
             virtual const char* get_name() const {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name entered\n";
+
                 if (!IL2CPP::get_field_name || !m_obj)
                     return nullptr;
 
-                if (m_name)
-                    return m_name;
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field object and IL2CPP::get_field_name valid\n";
 
-                return IL2CPP::get_field_name(m_obj);
+                if (m_name) {
+                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::m_name cached, using: " << m_name << "\n";
+                    return m_name;
+                }
+
+                const char* ret = IL2CPP::get_field_name(m_obj);
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::name returning: " << ret << "\n";
+                return ret;
             }
     };  // class Field
     std::vector<IField*> Field::objects;
@@ -513,16 +529,24 @@ namespace IL2CPP {
                 return new Field(field);
             }
 
-            virtual std::vector<IField*>& get_fields() {
-                if (m_fields.size())
+            virtual std::vector<IField*> get_fields() {
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::get_fields entered\n";
+
+                if (m_fields.size()) {
+                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::get_fields returning cached list: size "  << m_fields.size() << "\n";
                     return m_fields;
+                }
 
                 if (!IL2CPP::get_field_count || !IL2CPP::get_fields || !m_obj)
                     return m_fields;
 
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class object, IL2CPP::get_field_count, and IL2CPP::get_fields valid\n";
+
                 const size_t count = IL2CPP::get_field_count(m_obj);
                 if (count)
                     m_fields.reserve(count);
+
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::m_fields reserved " << m_fields.capacity() << " items\n";
 
                 void* iter = NULL;
                 void* field = nullptr;
@@ -530,10 +554,23 @@ namespace IL2CPP {
                 size_t index = 0;
 
                 while (field = IL2CPP::get_fields(m_obj, &iter)) {
+                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "New Field object created\n";
                     m_fields.push_back(new Field(field));
                 }
 
+                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::get_fields returning: size " << m_fields.size() << "\n";
+
                 return m_fields;
+            }
+
+            virtual size_t get_field_count() const {
+                if (m_fields.size())
+                    return m_fields.size();
+
+                if (!IL2CPP::get_field_count || !m_obj)
+                    return -1;
+
+                return IL2CPP::get_field_count(m_obj);
             }
 
             virtual IClass* get_nested_class(const char* name) const {
@@ -702,7 +739,7 @@ namespace IL2CPP {
                 return new Class(_class);
             }
 
-            virtual std::vector<IClass*>& get_classes() {
+            virtual std::vector<IClass*> get_classes() {
                 if (m_classes.size())
                     return m_classes;
 
@@ -729,6 +766,16 @@ namespace IL2CPP {
                 }
 
                 return m_classes;
+            }
+
+            virtual size_t get_class_count() const {
+                if (m_classes.size())
+                    return m_classes.size();
+
+                if (!IL2CPP::get_class_count || !m_obj)
+                    return -1;
+
+                return IL2CPP::get_class_count(m_obj);
             }
 
             virtual const char* get_name() const {

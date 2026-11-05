@@ -65,7 +65,7 @@ namespace GolfHook {
             if (!i)
                 continue;
             IL2CPP::IClass* c = (IL2CPP::IClass*)i;
-            GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tAssembly class: \"" << c->get_name() << "\" (" << c->get_fields().size() << " fields)\n";
+            GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tAssembly class: \"" << c->get_name() << "\" (" << c->get_field_count() << " fields)\n";
         }
 
         // load plugins
