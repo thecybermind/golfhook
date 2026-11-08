@@ -96,7 +96,7 @@ namespace Util {
     void* dll_load(const char* filename);
 
     /**
-    * @brief Get the handle for a loaded DLL.
+    * @brief Get the handle for a loaded DLL by name.
     *
     * This calls GetModuleHandleA in Windows, and dlopen(RTLD_NOLOAD) in linux.
     *
@@ -104,6 +104,16 @@ namespace Util {
     * @return handle for loaded module
     */
     void* dll_handle(const char* filename);
+
+    /**
+    * @brief Get the handle for a loaded DLL by pointer.
+    *
+    * This calls GetModuleHandleExA in Windows, and dladdr in linux.
+    *
+    * @param filename Path to DLL
+    * @return handle for loaded module
+    */
+    void* dll_handle_ptr(const void* ptr);
 
     /**
     * @brief Get a named function/variable from a given DLL.
@@ -191,6 +201,15 @@ namespace Util {
     * @return same pointer as dest
     */
     char* strncpyz(char* dest, const char* src, size_t count);
+
+    /**
+    * @brief Generate a new console window for standard in/out/err.
+    * 
+    * From https://stackoverflow.com/a/191880/809900
+    * 
+    * (Does nothing on Linux)
+    */
+    void setup_console();
 
     // Helper type for horrible_cast
     template <class OutputClass, class InputClass>

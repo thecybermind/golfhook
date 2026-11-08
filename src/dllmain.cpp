@@ -10,22 +10,15 @@ Created By:
 */
 
 #if defined(_WIN32)
- #define WIN32_LEAN_AND_MEAN
- #include <windows.h>
  // #include <MinHook/MinHook.h>
  // #pragma comment(lib, "..\\lib\\MinHook.x64.lib")
  // #pragma comment(lib, "..\\lib\\libMinHook.x64.lib")
+ #define APICONV __stdcall
+ #define GPA_FUNC "GetProcAddress"
 #elif defined(__linux__)
- #include <dlfcn.h>
- #define WINAPI
- enum {
-     DLL_PROCESS_DETACH,
-     DLL_PROCESS_ATTACH,
- };
+ #define APICONV
+ #define GPA_FUNC "dlsym"
 #endif
-
-#include <cstdio>
-#include <iostream>
 
 #include "dllmain.h"
 #include "iat_hook.h"
@@ -50,7 +43,7 @@ static struct {
 };
 
 
-void* WINAPI UnityPlayer_GetProcAddress_hook(void* hModule, const char* lpProcName) {
+void* APICONV UnityPlayer_GetProcAddress_hook(void* hModule, const char* lpProcName) {
     static void* hGameAssembly = nullptr;
 
     void* ret = Util::dll_symbol(hModule, lpProcName);
@@ -84,7 +77,6 @@ void* WINAPI UnityPlayer_GetProcAddress_hook(void* hModule, const char* lpProcNa
  * 
  * We primarily chose this because it guarantees we get loaded before UnityPlayer[_orig].dll. Since we load that DLL
  * and call UnityMain ourselves, we are able to hook that DLL's IAT for GetProcAddress to hook functions in GameAssembly.dll.
- * 
  */
 C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLine, int nCmdShow) {
     GHLOG(GH_LOG_TRACE, GH_TAG) << "UnityMain() called\n";
@@ -106,14 +98,9 @@ C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLi
         return -1;
     }
 
-#if defined(_WIN32)
-    const char* hookfunc = "GetProcAddress";
-#elif defined(__linux__)
-    const char* hookfunc = "dlsym";
-#endif
     // hook GetProcAddress called from UnityPlayer_orig.dll
-    if (!install_IAT_hook(hUnityPlayer, "kernel32.dll", hookfunc, (void*)&UnityPlayer_GetProcAddress_hook)) {
-        GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to hook UnityPlayer_orig.dll's " << hookfunc << "! Shutting down.\n";
+    if (!install_IAT_hook(hUnityPlayer, "kernel32.dll", GPA_FUNC, (void*)&UnityPlayer_GetProcAddress_hook)) {
+        GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to hook UnityPlayer_orig.dll's " GPA_FUNC "! Shutting down.\n";
         return -1;
     }
 
@@ -125,49 +112,12 @@ C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLi
 }
 
 
-/**
-* Generate a new console window for standard in/out/err.
-*
-* From https://stackoverflow.com/a/191880/809900
-*/
-static void RedirectIOToConsole() {
-#if defined(_WIN32)
-    CONSOLE_SCREEN_BUFFER_INFO coninfo;
-    FILE* fp;
-
-    // allocate a console for this app
-    AllocConsole();
-
-    // set the screen buffer to be big enough to let us scroll text
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
-    coninfo.dwSize.Y = 500; // maximum mumber of lines the output console should have
-    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
-
-    // redirect unbuffered STDOUT to the console
-    freopen_s(&fp, "CONOUT$", "w", stdout);
-    setvbuf(stdout, NULL, _IONBF, 0);
-
-    // redirect unbuffered STDIN to the console
-    freopen_s(&fp, "CONIN$", "r", stdin);
-    setvbuf(stdin, NULL, _IONBF, 0);
-
-    // redirect unbuffered STDERR to the console
-    freopen_s(&fp, "CONOUT$", "w", stderr);
-    setvbuf(stderr, NULL, _IONBF, 0);
-
-    // make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
-    // point to console as well
-    std::ios::sync_with_stdio();
-#endif  // _WIN32
-}
-
-
 // Initialize console, logging, and config
-int WINAPI DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
-    if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+int APICONV DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
+    if (ul_reason_for_call == 1 /* DLL_PROCESS_ATTACH */) {
         hMe = hModule;
 
-        RedirectIOToConsole();
+        Util::setup_console();
 
         Log::log_init("golfhook.log", Log::DEFAULT_SEVERITY, Log::DEFAULT_APPEND);
 
@@ -196,7 +146,7 @@ int WINAPI DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
         }
         */
     }
-    else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
+    else if (ul_reason_for_call == 0 /* DLL_PROCESS_DETACH */) {
         // MH_Uninitialize();
 
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook shutting down.\n";
@@ -208,18 +158,14 @@ int WINAPI DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
 #if defined(__linux__)
 // GCC constructor to route to DllMain
 C_DLLEXPORT void __attribute__((constructor)) dll_init() {
-    Dl_info dli;
-    memset(&dli, 0, sizeof(dli));
-
-    if (!dladdr((void*)dll_init, &dli))
-        return;
-
-    (void)DllMain(dli.dli_fbase, DLL_PROCESS_ATTACH, nullptr);
+    void* handle = Util::dll_handle_ptr((void*)&dll_init);
+    if (handle)
+        (void)DllMain(handle, 1 /* DLL_PROCESS_ATTACH */, nullptr);
 }
 
 // GCC destructor to route to DllMain
 C_DLLEXPORT void __attribute__((destructor)) dll_fini() {
-    (void)DllMain(hMe, DLL_PROCESS_DETACH, nullptr);
+    (void)DllMain(hMe, 0 /* DLL_PROCESS_DETACH */, nullptr);
 }
 #endif // __linux__
 

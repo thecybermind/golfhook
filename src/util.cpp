@@ -15,7 +15,6 @@ Created By:
  #define WIN32_LEAN_AND_MEAN
  #include <windows.h>
 #elif defined(__linux__)
- // #define _GNU_SOURCE
  #include <dlfcn.h>
 #endif
 
@@ -93,6 +92,26 @@ namespace Util {
         return (void*)GetModuleHandleA(filename);
 #elif defined(__linux__)
         return dlopen(filename, RTLD_NOLOAD);
+#endif
+    }
+
+    
+    void* dll_handle_ptr(const void* ptr) {
+#if defined(_WIN32)
+        HMODULE hModule = nullptr;
+
+        if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)ptr, &hModule))
+            return (void*)hModule;
+
+        return nullptr;
+#elif defined(__linux__)
+        Dl_info dli;
+        memset(&dli, 0, sizeof(dli));
+
+        if (!dladdr(ptr, &dli))
+            return nullptr;
+
+        return dli.dli_fbase;
 #endif
     }
 
@@ -193,6 +212,38 @@ namespace Util {
         else
             dest[0] = '\0';
         return ret;
+    }
+
+
+    void setup_console() {
+#if defined(_WIN32)
+        CONSOLE_SCREEN_BUFFER_INFO coninfo;
+        FILE* fp;
+
+        // allocate a console for this app
+        AllocConsole();
+
+        // set the screen buffer to be big enough to let us scroll text
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+        coninfo.dwSize.Y = 500; // maximum mumber of lines the output console should have
+        SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+
+        // redirect unbuffered STDOUT to the console
+        freopen_s(&fp, "CONOUT$", "w", stdout);
+        setvbuf(stdout, nullptr, _IONBF, 0);
+
+        // redirect unbuffered STDIN to the console
+        freopen_s(&fp, "CONIN$", "r", stdin);
+        setvbuf(stdin, nullptr, _IONBF, 0);
+
+        // redirect unbuffered STDERR to the console
+        freopen_s(&fp, "CONOUT$", "w", stderr);
+        setvbuf(stderr, nullptr, _IONBF, 0);
+
+        // make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
+        // point to console as well
+        std::ios::sync_with_stdio();
+#endif  // _WIN32
     }
 
 }   // namespace Util

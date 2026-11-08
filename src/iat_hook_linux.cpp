@@ -29,24 +29,24 @@ void* install_hook(void* target_module, const char*, const char* function_name, 
 
     size_t funcnamelen = strlen(function_name);	// store length of function name for comparison (check first X bytes, see if next byte is '\0' or '@')
 
-    struct link_map* lmap = NULL;		// from dlinfo man page: pointer to dynamic section of the shared object
-    const char* plt_addr_base = NULL;	// from dlinfo man page: difference between an address in the ELF file and the address in memory
+    struct link_map* lmap = nullptr;		    // from dlinfo man page: pointer to dynamic section of the shared object
+    const char* plt_addr_base = nullptr;	    // from dlinfo man page: difference between an address in the ELF file and the address in memory
 
-    const Elf64_Sym* dynsym = NULL;		// DT_SYMTAB: address of dynamic symbol table
-    const char* dynstr = NULL;			// DT_STRTAB: dynamic string table
-    size_t dynstr_size = 0;				// DT_STRSZ: total size in bytes of the dynamic string table (DT_STRTAB)
-    const Elf64_Rel* rela_plt = NULL;	// DT_JMPREL: relocation entries
-    size_t rela_plt_cnt = 0;			// DT_PLTRELSZ: total size in bytes of the relocation entries (DT_PLTRELSZ)
+    const Elf64_Sym* dynsym = nullptr;		    // DT_SYMTAB: address of dynamic symbol table
+    const char* dynstr = nullptr;			    // DT_STRTAB: dynamic string table
+    size_t dynstr_size = 0;				        // DT_STRSZ: total size in bytes of the dynamic string table (DT_STRTAB)
+    const Elf64_Rel* rela_plt = nullptr;        // DT_JMPREL: relocation entries
+    size_t rela_plt_cnt = 0;			        // DT_PLTRELSZ: total size in bytes of the relocation entries (DT_PLTRELSZ)
 
-    const char* symbol_name;			// current name when looping through symbols
-    void** symbol_addr;					// current address when looping through symbols
+    const char* symbol_name;			        // current name when looping through symbols
+    void** symbol_addr;					        // current address when looping through symbols
 
-    void* ret = NULL;					// store and return old function address
+    void* ret = nullptr;                        // store and return old function address
 
     // get dynamic section of target module
     if (dlinfo(target_module, RTLD_DI_LINKMAP, &lmap) != 0) {
         printf("dlinfo failed!\n");
-        return NULL;
+        return nullptr;
     }
 
     plt_addr_base = (char*)lmap->l_addr;
@@ -61,7 +61,7 @@ void* install_hook(void* target_module, const char*, const char* function_name, 
         else if (dyn->d_tag == DT_SYMENT) {
             if (dyn->d_un.d_val != sizeof(Elf64_Sym)) {
                 printf("DT_SYMENT wrong size\n");
-                return NULL;
+                return nullptr;
             }
         }
         // .dynstr section
@@ -83,13 +83,13 @@ void* install_hook(void* target_module, const char*, const char* function_name, 
     }
     // make sure we got everything we need
     if (!dynsym || !dynstr || !dynstr_size || !rela_plt || !rela_plt_cnt)
-        return NULL;
+        return nullptr;
 
     // loop through all relocations
     for (const Elf64_Rel* plt = rela_plt; plt != rela_plt + rela_plt_cnt; plt++) {
         // low byte of r_info is the type, high 3 bytes of r_info is the symbol index
-        if (ELF32_R_TYPE(plt->r_info) == R_386_JMP_SLOT) {
-            size_t idx = ELF32_R_SYM(plt->r_info);
+        if (ELF64_R_TYPE(plt->r_info) == R_X86_64_JUMP_SLOT) {
+            size_t idx = ELF64_R_SYM(plt->r_info);
             // get string index for symbol
             idx = dynsym[idx].st_name;
             // string index out of bounds, skip
@@ -100,7 +100,7 @@ void* install_hook(void* target_module, const char*, const char* function_name, 
             // if this symbol matches the given function name
             if (!strncmp(symbol_name, function_name, funcnamelen) && (symbol_name[funcnamelen] == '\0' || symbol_name[funcnamelen] == '@')) {
                 if (mprotect(ALIGN_ADDR(symbol_addr), page_size, PROT_READ | PROT_WRITE) != 0)
-                    return NULL;
+                    return nullptr;
                 ret = *symbol_addr;
                 *symbol_addr = function_hook;
                 // mprotect(ALIGN_ADDR(symbol_addr), page_size, PROT_READ | PROT_EXEC);
@@ -109,7 +109,7 @@ void* install_hook(void* target_module, const char*, const char* function_name, 
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 #endif // __linux__

@@ -27,12 +27,12 @@ void* install_IAT_hook(void* target_module, const char* dll_name, const char* fu
     PIMAGE_DATA_DIRECTORY importDescriptorTable = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
     PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(module_base + importDescriptorTable->VirtualAddress);
 
-    // loop through each descriptor entry looking for a matching DLL name (NULL = check every DLL)
+    // loop through each descriptor entry looking for a matching DLL name
     for (; importDescriptor->Name != 0; importDescriptor++) {
         PIMAGE_THUNK_DATA thunk_name = (PIMAGE_THUNK_DATA)(module_base + importDescriptor->OriginalFirstThunk);
         PIMAGE_THUNK_DATA thunk_addr = (PIMAGE_THUNK_DATA)(module_base + importDescriptor->FirstThunk);
 
-        // if this dll isn't the one we're looking for, continue 
+        // if this dll isn't the one we're looking for, continue (NULL = check every DLL)
         if (dll_name && _stricmp(module_base + importDescriptor->Name, dll_name) != 0)
             continue;
 
