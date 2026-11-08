@@ -14,7 +14,7 @@ Created By:
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <string.h>
-#include "iat_hook.h"
+#include "hook_iat.h"
 
 
 void* install_IAT_hook(void* target_module, const char* dll_name, const char* function_name, void* function_hook) {

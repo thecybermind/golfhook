@@ -18,7 +18,7 @@ Created By:
 #include <string>
 #include <memory>
 
-#include "iat_hook.h"
+#include "hook_iat.h"
 #include "il2cpp.hpp"
 
 namespace GolfHook {

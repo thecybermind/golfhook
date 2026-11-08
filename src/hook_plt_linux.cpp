@@ -20,11 +20,11 @@ Created By:
 #include <unistd.h>
 #include <sys/mman.h>
 #include <linux/limits.h>
-#include "iat_hook.h"
+#include "hook_iat.h"
 
 
 #define ALIGN_ADDR(addr) ((void*)((uintptr_t)addr & ~(page_size - 1)))
-void* install_hook(void* target_module, const char*, const char* function_name, void* function_hook) {
+void* install_IAT_hook(void* target_module, const char*, const char* function_name, void* function_hook) {
     size_t page_size = sysconf(_SC_PAGESIZE);   // need to store size of page for mprotect
 
     size_t funcnamelen = strlen(function_name);	// store length of function name for comparison (check first X bytes, see if next byte is '\0' or '@')
