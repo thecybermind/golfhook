@@ -51,24 +51,24 @@ namespace IL2CPP {
     IL2CPP_API(is_debugger_attached, bool, (void));
 
     // internal calls and runtime
-    IL2CPP_API(add_icall, void, (const char* name, const void* method_ptr));
+    IL2CPP_API(add_internal_call, void, (const char* name, const void* method_ptr));
     IL2CPP_API(resolve_icall, void, (const char* name));
-    IL2CPP_API(init_class, void, (void* _class));
-    IL2CPP_API(init_object, void, (void* obj));
+    IL2CPP_API(runtime_class_init, void, (void* _class));
+    IL2CPP_API(runtime_object_init, void, (void* obj));
 
     // thread, domain, and assembly
     IL2CPP_API(thread_attach, void*, (void* domain));
-    IL2CPP_API(get_domain, void*, (void));
-    IL2CPP_API(get_assemblies, void**, (const void* domain, size_t* count));
+    IL2CPP_API(domain_get, void*, (void));
+    IL2CPP_API(domain_get_assemblies, void**, (const void* domain, size_t* count));
 
     // images
-    IL2CPP_API(get_image, void*, (const void* assembly));
-    IL2CPP_API(get_image_name, const char*, (const void* image));
-    IL2CPP_API(get_class_count, size_t, (const void* image));
-    IL2CPP_API(get_class_from_image, void*, (const void* image, size_t index));
+    IL2CPP_API(assembly_get_image, void*, (const void* assembly));
+    IL2CPP_API(image_get_name, const char*, (const void* image));
+    IL2CPP_API(image_get_class_count, size_t, (const void* image));
+    IL2CPP_API(image_get_class, void*, (const void* image, size_t index));
 
     // objects
-    IL2CPP_API(object_create, void*, (void* domain, void* _class));
+    IL2CPP_API(object_new, void*, (void* domain, void* _class));
     IL2CPP_API(object_unbox, void*, (void* obj));
     IL2CPP_API(object_box, void*, (void* _class, void* data));
     IL2CPP_API(object_get_size, uint32_t, (void* obj));
@@ -76,13 +76,13 @@ namespace IL2CPP {
     IL2CPP_API(object_get_virtual_method, void*, (void* obj, void* method));
 
     // arrays
-    IL2CPP_API(get_array_element_size, int, (const void* array_class));
-    IL2CPP_API(get_array_class, void*, (const void* element_class, uint32_t rank));
+    IL2CPP_API(array_element_size, int, (const void* array_class));
+    IL2CPP_API(array_class_get, void*, (const void* element_class, uint32_t rank));
     IL2CPP_API(get_array_length, uint32_t, (const void* array));
     IL2CPP_API(array_new, void*, (void* element_type_infof, size_t length));
 
     // class
-    IL2CPP_API(get_class, void*, (const void* image, const char* _namespace, const char* name));
+    IL2CPP_API(class_from_name, void*, (const void* image, const char* _namespace, const char* name));
     IL2CPP_API(get_class_name, const char*, (const void* _class));
     IL2CPP_API(get_class_namespace, const char*, (const void* _class));
     IL2CPP_API(get_class_type, void*, (const void* _class));
@@ -153,24 +153,24 @@ namespace IL2CPP {
         IL2CPP_GET_ADDR(is_debugger_attached, "il2cpp_is_debugger_attached", hGameAssembly);
 
         // internal calls and runtime
-        IL2CPP_GET_ADDR(add_icall, "il2cpp_add_internal_call", hGameAssembly);
+        IL2CPP_GET_ADDR(add_internal_call, "il2cpp_add_internal_call", hGameAssembly);
         IL2CPP_GET_ADDR(resolve_icall, "il2cpp_resolve_icall", hGameAssembly);
-        IL2CPP_GET_ADDR(init_class, "il2cpp_runtime_class_init", hGameAssembly);
-        IL2CPP_GET_ADDR(init_object, "il2cpp_runtime_object_init", hGameAssembly);
+        IL2CPP_GET_ADDR(runtime_class_init, "il2cpp_runtime_class_init", hGameAssembly);
+        IL2CPP_GET_ADDR(runtime_object_init, "il2cpp_runtime_object_init", hGameAssembly);
 
         // thread, domains, and assemblies
         IL2CPP_GET_ADDR(thread_attach, "il2cpp_thread_attach", hGameAssembly);
-        IL2CPP_GET_ADDR(get_domain, "il2cpp_domain_get", hGameAssembly);
-        IL2CPP_GET_ADDR(get_assemblies, "il2cpp_domain_get_assemblies", hGameAssembly);
+        IL2CPP_GET_ADDR(domain_get, "il2cpp_domain_get", hGameAssembly);
+        IL2CPP_GET_ADDR(domain_get_assemblies, "il2cpp_domain_get_assemblies", hGameAssembly);
 
         // images
-        IL2CPP_GET_ADDR(get_image, "il2cpp_assembly_get_image", hGameAssembly);
-        IL2CPP_GET_ADDR(get_image_name, "il2cpp_image_get_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_from_image, "il2cpp_image_get_class", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_count, "il2cpp_image_get_class_count", hGameAssembly);
+        IL2CPP_GET_ADDR(assembly_get_image, "il2cpp_assembly_get_image", hGameAssembly);
+        IL2CPP_GET_ADDR(image_get_name, "il2cpp_image_get_name", hGameAssembly);
+        IL2CPP_GET_ADDR(image_get_class, "il2cpp_image_get_class", hGameAssembly);
+        IL2CPP_GET_ADDR(image_get_class_count, "il2cpp_image_get_class_count", hGameAssembly);
 
         // objects
-        IL2CPP_GET_ADDR(object_create, "il2cpp_object_new", hGameAssembly);
+        IL2CPP_GET_ADDR(object_new, "il2cpp_object_new", hGameAssembly);
         IL2CPP_GET_ADDR(object_box, "il2cpp_object_box", hGameAssembly);
         IL2CPP_GET_ADDR(object_unbox, "il2cpp_object_unbox", hGameAssembly);
         IL2CPP_GET_ADDR(object_get_size, "il2cpp_object_get_size", hGameAssembly);
@@ -178,13 +178,14 @@ namespace IL2CPP {
         IL2CPP_GET_ADDR(object_get_virtual_method, "il2cpp_object_get_virtual_method", hGameAssembly);
 
         // arrays
-        IL2CPP_GET_ADDR(get_array_element_size, "il2cpp_array_element_size", hGameAssembly);
-        IL2CPP_GET_ADDR(get_array_class, "il2cpp_array_class_get", hGameAssembly);
+        IL2CPP_GET_ADDR(array_element_size, "il2cpp_array_element_size", hGameAssembly);
+        IL2CPP_GET_ADDR(array_class_get, "il2cpp_array_class_get", hGameAssembly);
         IL2CPP_GET_ADDR(get_array_length, "il2cpp_array_length", hGameAssembly);
         IL2CPP_GET_ADDR(array_new, "il2cpp_array_new", hGameAssembly);
 
         // classes
-        IL2CPP_GET_ADDR(get_class, "il2cpp_class_from_name", hGameAssembly);
+        IL2CPP_GET_ADDR(class_from_name, "il2cpp_class_from_name", hGameAssembly);
+        // todo: rename IL2CPP members from here
         IL2CPP_GET_ADDR(get_class_name, "il2cpp_class_get_name", hGameAssembly);
         IL2CPP_GET_ADDR(get_class_namespace, "il2cpp_class_get_namespace", hGameAssembly);
         IL2CPP_GET_ADDR(get_class_type, "il2cpp_class_enum_basetype", hGameAssembly);
@@ -705,23 +706,23 @@ namespace IL2CPP {
             }
 
             virtual IClass* get_class(const char* name, const char* name_space = "") const {
-                if (!IL2CPP::get_class || !m_obj)
+                if (!IL2CPP::class_from_name || !m_obj)
                     return nullptr;
 
-                auto _class = IL2CPP::get_class(m_obj, name_space, name);
+                auto _class = IL2CPP::class_from_name(m_obj, name_space, name);
                 return new Class(_class);
             }
 
             virtual std::vector<IClass*> get_classes() {
-                if (m_classes.size() || !IL2CPP::get_class_count || !IL2CPP::get_class_from_image || !IL2CPP::get_class_name || !m_obj)
+                if (m_classes.size() || !IL2CPP::image_get_class_count || !IL2CPP::image_get_class || !IL2CPP::get_class_name || !m_obj)
                     return m_classes;
 
-                size_t count = IL2CPP::get_class_count(m_obj);
+                size_t count = IL2CPP::image_get_class_count(m_obj);
                 if (count) {
                     m_classes.reserve(count);
 
                     for (size_t index = 0U; index < count; ++index) {
-                        auto address = IL2CPP::get_class_from_image(m_obj, index);
+                        auto address = IL2CPP::image_get_class(m_obj, index);
                         if (!address)
                             continue;
 
@@ -743,14 +744,14 @@ namespace IL2CPP {
                 if (m_classes.size())
                     return m_classes.size();
 
-                if (!IL2CPP::get_class_count || !m_obj)
+                if (!IL2CPP::image_get_class_count || !m_obj)
                     return -1;
 
-                return IL2CPP::get_class_count(m_obj);
+                return IL2CPP::image_get_class_count(m_obj);
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_image_name || !m_obj)
+                if (!IL2CPP::image_get_name || !m_obj)
                     return nullptr;
 
                 return ((NameCast*)m_obj)->m_name;
@@ -769,18 +770,18 @@ namespace IL2CPP {
     void Manager::InitAssemblies() {
         (void)initialize();
 
-        const auto domain = IL2CPP::get_domain();
+        const auto domain = IL2CPP::domain_get();
         IL2CPP::thread_attach(domain);
 
         size_t count = 0U;
 
-        const auto assemblies = IL2CPP::get_assemblies(domain, &count);
+        const auto assemblies = IL2CPP::domain_get_assemblies(domain, &count);
 
         if (count) {
             m_images.reserve(count);
 
             for (size_t index = 0U; index < count; ++index) {
-                auto image = IL2CPP::get_image(assemblies[index]);
+                auto image = IL2CPP::assembly_get_image(assemblies[index]);
                 if (image)
                     m_images.push_back(new Image(image));
             }

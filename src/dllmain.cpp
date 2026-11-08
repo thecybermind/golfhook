@@ -21,7 +21,7 @@ Created By:
 #endif
 
 #include "dllmain.h"
-#include "iat_hook.h"
+#include "hook_iat.h"
 #include "main.hpp"
 #include "util.hpp"
 #include "config.hpp"

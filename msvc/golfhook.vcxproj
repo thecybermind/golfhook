@@ -13,8 +13,8 @@
   <ItemGroup>
     <ClCompile Include="..\src\config.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
-    <ClCompile Include="..\src\iat_hook_linux.cpp" />
-    <ClCompile Include="..\src\iat_hook_win32.cpp" />
+    <ClCompile Include="..\src\hook_iat_win32.cpp" />
+    <ClCompile Include="..\src\hook_plt_linux.cpp" />
     <ClCompile Include="..\src\il2cpp.cpp" />
     <ClCompile Include="..\src\log.cpp" />
     <ClCompile Include="..\src\main.cpp" />
@@ -26,14 +26,14 @@
     <ClInclude Include="..\include\dllmain.h" />
     <ClInclude Include="..\include\format.hpp" />
     <ClInclude Include="..\include\ghapi.hpp" />
-    <ClInclude Include="..\include\iat_hook.h" />
+    <ClInclude Include="..\include\hook_iat.h" />
+    <ClInclude Include="..\include\hook_virtual.hpp" />
     <ClInclude Include="..\include\il2cpp.hpp" />
     <ClInclude Include="..\include\log.hpp" />
     <ClInclude Include="..\include\main.hpp" />
     <ClInclude Include="..\include\plugin.hpp" />
     <ClInclude Include="..\include\util.hpp" />
     <ClInclude Include="..\include\version.h" />
-    <ClInclude Include="..\include\vhook.hpp" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

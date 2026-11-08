@@ -11,8 +11,8 @@ Created By:
 
 #pragma once
 
-#ifndef GOLFHOOK_VHOOK_HPP
-#define GOLFHOOK_VHOOK_HPP
+#ifndef GOLFHOOK_HOOK_VIRTUAL_HPP
+#define GOLFHOOK_HOOK_VIRTUAL_HPP
 
 #include <cstring>
 #include <vector>
@@ -43,6 +43,9 @@ class VHook {
         int get_vtable_size() {
             // loop through vtable for a null pointer to get max size
             void** vtable = (void**)vtable_orig;
+
+            if (!vtable)
+                return 0;
 
             int retval = 0;
             while (vtable[retval] != 0)
@@ -108,4 +111,4 @@ class VHook {
         }
 };
 
-#endif // GOLFHOOK_VHOOK_HPP
+#endif // GOLFHOOK_HOOK_VIRTUAL_HPP

@@ -16,4 +16,4 @@ Created By:
 
 void* install_IAT_hook(void* target_module, const char* dll_name, const char* function_name, void* function_hook);
 
-#endif // GOLFHOOK_HOOK_H
+#endif // GOLFHOOK_HOOK_IAT_H
