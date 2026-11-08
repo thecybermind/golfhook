@@ -257,9 +257,9 @@ namespace IL2CPP {
 
             static void Cleanup() {
                 GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Method objects.\n";
-                for (auto i : objects) {
+                for (auto i : objects)
                     delete i;
-                }
+
                 objects.clear();
             }
 
@@ -271,9 +271,8 @@ namespace IL2CPP {
 
                 const auto result = IL2CPP::runtime_invoke(m_obj, nullptr, params, &exc);
 
-                if (exc != nullptr) {
+                if (exc != nullptr)
                     GHLOG(GH_LOG_WARNING, GH_TAG) << "Method::invoke_static() raised exception: " << exc << "\n";
-                }
 
                 return result;
             }
@@ -286,9 +285,8 @@ namespace IL2CPP {
 
                 const auto result = IL2CPP::runtime_invoke(m_obj, self, params, &exc);
 
-                if (exc != nullptr) {
+                if (exc != nullptr)
                     GHLOG(GH_LOG_WARNING, GH_TAG) << "Method::invoke(" << self << ") raised exception: " << exc << "\n";
-                }
 
                 return result;
             }
@@ -369,9 +367,9 @@ namespace IL2CPP {
 
             static void Cleanup() {
                 GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Field objects.\n";
-                for (auto i : objects) {
+                for (auto i : objects)
                     delete i;
-                }
+
                 objects.clear();
             }
 
@@ -441,15 +439,12 @@ namespace IL2CPP {
                         break;
                 }
 
-                if ((attrs & FIELD_ATTRIBUTE_LITERAL) == FIELD_ATTRIBUTE_LITERAL) {
+                if ((attrs & FIELD_ATTRIBUTE_LITERAL) == FIELD_ATTRIBUTE_LITERAL)
                     strcat(attr, "const ");
-                }
-                else if ((attrs & FIELD_ATTRIBUTE_STATIC) == FIELD_ATTRIBUTE_STATIC) {
+                else if ((attrs & FIELD_ATTRIBUTE_STATIC) == FIELD_ATTRIBUTE_STATIC)
                     strcat(attr, "static ");
-                }
-                else if ((attrs & FIELD_ATTRIBUTE_INIT_ONLY) == FIELD_ATTRIBUTE_INIT_ONLY) {
+                else if ((attrs & FIELD_ATTRIBUTE_INIT_ONLY) == FIELD_ATTRIBUTE_INIT_ONLY)
                     strcat(attr, "readonly ");
-                }
 
                 return attr;
             }
@@ -458,9 +453,8 @@ namespace IL2CPP {
                 if (!IL2CPP::field_get_name || !m_obj)
                     return nullptr;
 
-                if (m_name) {
+                if (m_name)
                     return m_name;
-                }
 
                 m_name = IL2CPP::field_get_name(m_obj);
                 return m_name;
@@ -470,9 +464,8 @@ namespace IL2CPP {
                 if (!IL2CPP::field_get_name || !m_obj)
                     return nullptr;
 
-                if (m_name) {
+                if (m_name)
                     return m_name;
-                }
 
                 const char* ret = IL2CPP::field_get_name(m_obj);
                 return ret;
@@ -493,9 +486,9 @@ namespace IL2CPP {
 
             static void Cleanup() {
                 GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Class objects.\n";
-                for (auto i : objects) {
+                for (auto i : objects)
                     delete i;
-                }
+
                 objects.clear();
             }
 
@@ -597,9 +590,9 @@ namespace IL2CPP {
 
             static void Cleanup() {
                 GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Type objects.\n";
-                for (auto i : objects) {
+                for (auto i : objects)
                     delete i;
-                }
+
                 objects.clear();
             }
 
@@ -699,9 +692,9 @@ namespace IL2CPP {
 
             static void Cleanup() {
                 GHLOG(GH_LOG_DEBUG, GH_TAG) << "Cleaning up " << objects.size() << " IL2CPP::Image objects.\n";
-                for (auto i : objects) {
+                for (auto i : objects)
                     delete i;
-                }
+
                 objects.clear();
             }
 
