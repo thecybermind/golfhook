@@ -83,61 +83,61 @@ namespace IL2CPP {
 
     // class
     IL2CPP_API(class_from_name, void*, (const void* image, const char* _namespace, const char* name));
-    IL2CPP_API(get_class_name, const char*, (const void* _class));
-    IL2CPP_API(get_class_namespace, const char*, (const void* _class));
-    IL2CPP_API(get_class_type, void*, (const void* _class));
-    IL2CPP_API(get_class_generic, bool, (const void* _class));
-    IL2CPP_API(get_class_inflated, bool, (const void* _class));
-    IL2CPP_API(get_class_has_parent, bool, (const void* _class, const void* class_c));
-    IL2CPP_API(get_class_get_parent, void*, (const void* _class));
-    IL2CPP_API(get_class_is_subclass_of, bool, (const void* _class, const void* parent__class, bool check_interfaces));
-    IL2CPP_API(get_class_from_type, void*, (const void* type));
-    IL2CPP_API(get_class_event_info, void*, (const void* _class, void* iter));
-    IL2CPP_API(get_class_interfaces, void*, (const void* _class, void* iter));
-    IL2CPP_API(get_class_properties, void*, (const void* _class, void* iter));
-    IL2CPP_API(get_class_property_from_name, void*, (const void* _class, const char* name));
+    IL2CPP_API(class_get_name, const char*, (const void* _class));
+    IL2CPP_API(class_get_namespace, const char*, (const void* _class));
+    IL2CPP_API(class_enum_basetype, void*, (const void* _class));
+    IL2CPP_API(class_is_generic, bool, (const void* _class));
+    IL2CPP_API(class_is_inflated, bool, (const void* _class));
+    IL2CPP_API(has_parent, bool, (const void* _class, const void* class_c));
+    IL2CPP_API(class_get_parent, void*, (const void* _class));
+    IL2CPP_API(class_is_subclass_of, bool, (const void* _class, const void* parent__class, bool check_interfaces));
+    IL2CPP_API(class_from_il2cpp_type, void*, (const void* type));
+    IL2CPP_API(class_get_events, void*, (const void* _class, void* iter));
+    IL2CPP_API(class_get_interfaces, void*, (const void* _class, void* iter));
+    IL2CPP_API(class_get_properties, void*, (const void* _class, void* iter));
+    IL2CPP_API(class_property_from_name, void*, (const void* _class, const char* name));
 
     // types
-    IL2CPP_API(get_nested_types, void*, (const void* _class, void*));
-    IL2CPP_API(get_type_attributes, uint32_t, (const void* type));
-    IL2CPP_API(get_type_class, void*, (const void* type));
-    IL2CPP_API(get_type_name, const char*, (const void* type));
-    IL2CPP_API(get_type_object, void*, (const void* type));
-    IL2CPP_API(get_type_type, int, (const void* type));
-    IL2CPP_API(get_type_equals, bool, (void* type_1, void* type_2));
-    IL2CPP_API(get_type_is_byref, bool, (void* type));
+    IL2CPP_API(class_get_nested_types, void*, (const void* _class, void*));
+    IL2CPP_API(type_get_attrs, uint32_t, (const void* type));
+    IL2CPP_API(type_get_class_or_element_class, void*, (const void* type));
+    IL2CPP_API(type_get_name, const char*, (const void* type));
+    IL2CPP_API(type_get_object, void*, (const void* type));
+    IL2CPP_API(type_get_type, int, (const void* type));
+    IL2CPP_API(type_equals, bool, (void* type_1, void* type_2));
+    IL2CPP_API(type_is_byref, bool, (void* type));
 
     // methods
-    IL2CPP_API(method_call, void*, (const void* method, void* obj, void** params, void** excption));
-    IL2CPP_API(get_method, void*, (const void* _class, const char* name, int params));
-    IL2CPP_API(get_methods, void*, (const void* _class, void* iter));
-    IL2CPP_API(get_method_name, const char*, (const void* method));
-    IL2CPP_API(get_method_is_generic, bool, (const void* method));
-    IL2CPP_API(get_method_is_inflated, bool, (const void* method));
-    IL2CPP_API(get_method_is_instance, bool, (const void* method));
-    IL2CPP_API(get_method_param_count, int, (const void* method));
-    IL2CPP_API(get_method_param_name, const char*, (const void* method, int index));
-    IL2CPP_API(get_method_param_type, const char*, (const void* method, int index));
-    IL2CPP_API(get_method_return_type, void*, (const void* method));
+    IL2CPP_API(runtime_invoke, void*, (const void* method, void* obj, void** params, void** excption));
+    IL2CPP_API(class_get_method_from_name, void*, (const void* _class, const char* name, int params));
+    IL2CPP_API(class_get_methods, void*, (const void* _class, void* iter));
+    IL2CPP_API(method_get_name, const char*, (const void* method));
+    IL2CPP_API(method_is_generic, bool, (const void* method));
+    IL2CPP_API(method_is_inflated, bool, (const void* method));
+    IL2CPP_API(method_is_instance, bool, (const void* method));
+    IL2CPP_API(method_get_param_count, int, (const void* method));
+    IL2CPP_API(method_get_param_name, const char*, (const void* method, int index));
+    IL2CPP_API(method_get_param_type, const char*, (const void* method, int index));
+    IL2CPP_API(method_get_return_type, void*, (const void* method));
 
     // fields
-    IL2CPP_API(get_fields, void*, (const void* _class, void* iter));
-    IL2CPP_API(get_field, void*, (const void* _class, const char* name));
-    IL2CPP_API(get_field_offset, size_t, (const void* field));
-    IL2CPP_API(get_field_count, size_t, (const void* _class));
-    IL2CPP_API(get_field_name, const char*, (const void* field));
-    IL2CPP_API(get_field_value, void, (const void* self, const void* field, void* value));
-    IL2CPP_API(set_field_value, void, (const void* self, const void* field, void* value));
-    IL2CPP_API(get_field_object, void*, (const void* field, const void* self));
-    IL2CPP_API(set_field_object, void, (const void* field, const void* self, void* value));
-    IL2CPP_API(get_field_type, void*, (const void* field));
-    IL2CPP_API(get_static_field, void*, (const void* field, void* output));
-    IL2CPP_API(set_static_field, void*, (const void* field, void* value));
-    IL2CPP_API(get_field_flags, int, (const void* field));
+    IL2CPP_API(class_get_fields, void*, (const void* _class, void* iter));
+    IL2CPP_API(class_get_field_from_name, void*, (const void* _class, const char* name));
+    IL2CPP_API(field_get_offset, size_t, (const void* field));
+    IL2CPP_API(class_num_fields, size_t, (const void* _class));
+    IL2CPP_API(field_get_name, const char*, (const void* field));
+    IL2CPP_API(field_get_value, void, (const void* self, const void* field, void* value));
+    IL2CPP_API(field_set_value, void, (const void* self, const void* field, void* value));
+    IL2CPP_API(field_get_value_object, void*, (const void* field, const void* self));
+    IL2CPP_API(field_set_value_object, void, (const void* field, const void* self, void* value));
+    IL2CPP_API(field_get_type, void*, (const void* field));
+    IL2CPP_API(field_static_get_value, void*, (const void* field, void* output));
+    IL2CPP_API(field_static_set_value, void*, (const void* field, void* value));
+    IL2CPP_API(field_get_flags, int, (const void* field));
 
     // strings
-    IL2CPP_API(get_string_chars, wchar_t*, (void* string_obj));
-    IL2CPP_API(create_string, const char*, (void* domain, const char* text));
+    IL2CPP_API(string_chars, wchar_t*, (void* string_obj));
+    IL2CPP_API(string_new, const char*, (void* domain, const char* text));
 
 
     bool initialize() {
@@ -185,62 +185,61 @@ namespace IL2CPP {
 
         // classes
         IL2CPP_GET_ADDR(class_from_name, "il2cpp_class_from_name", hGameAssembly);
-        // todo: rename IL2CPP members from here
-        IL2CPP_GET_ADDR(get_class_name, "il2cpp_class_get_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_namespace, "il2cpp_class_get_namespace", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_type, "il2cpp_class_enum_basetype", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_generic, "il2cpp_class_is_generic", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_inflated, "il2cpp_class_is_inflated", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_has_parent, "il2cpp_has_parent", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_get_parent, "il2cpp_class_get_parent", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_is_subclass_of, "il2cpp_class_is_subclass_of", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_from_type, "il2cpp_class_from_il2cpp_type", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_event_info, "il2cpp_class_get_events", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_interfaces, "il2cpp_class_get_interfaces", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_properties, "il2cpp_class_get_properties", hGameAssembly);
-        IL2CPP_GET_ADDR(get_class_property_from_name, "il2cpp_class_property_from_name", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_name, "il2cpp_class_get_name", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_namespace, "il2cpp_class_get_namespace", hGameAssembly);
+        IL2CPP_GET_ADDR(class_enum_basetype, "il2cpp_class_enum_basetype", hGameAssembly);
+        IL2CPP_GET_ADDR(class_is_generic, "il2cpp_class_is_generic", hGameAssembly);
+        IL2CPP_GET_ADDR(class_is_inflated, "il2cpp_class_is_inflated", hGameAssembly);
+        IL2CPP_GET_ADDR(has_parent, "il2cpp_has_parent", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_parent, "il2cpp_class_get_parent", hGameAssembly);
+        IL2CPP_GET_ADDR(class_is_subclass_of, "il2cpp_class_is_subclass_of", hGameAssembly);
+        IL2CPP_GET_ADDR(class_from_il2cpp_type, "il2cpp_class_from_il2cpp_type", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_events, "il2cpp_class_get_events", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_interfaces, "il2cpp_class_get_interfaces", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_properties, "il2cpp_class_get_properties", hGameAssembly);
+        IL2CPP_GET_ADDR(class_property_from_name, "il2cpp_class_property_from_name", hGameAssembly);
 
         // types
-        IL2CPP_GET_ADDR(get_nested_types, "il2cpp_class_get_nested_types", hGameAssembly);
-        IL2CPP_GET_ADDR(get_type_attributes, "il2cpp_type_get_attrs", hGameAssembly);
-        IL2CPP_GET_ADDR(get_type_class, "il2cpp_type_get_class_or_element_class", hGameAssembly);
-        IL2CPP_GET_ADDR(get_type_name, "il2cpp_type_get_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_type_object, "il2cpp_type_get_object", hGameAssembly);
-        IL2CPP_GET_ADDR(get_type_type, "il2cpp_type_get_type", hGameAssembly);
-        IL2CPP_GET_ADDR(get_type_equals, "il2cpp_type_equals", hGameAssembly);
-        IL2CPP_GET_ADDR(get_type_is_byref, "il2cpp_type_is_byref", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_nested_types, "il2cpp_class_get_nested_types", hGameAssembly);
+        IL2CPP_GET_ADDR(type_get_attrs, "il2cpp_type_get_attrs", hGameAssembly);
+        IL2CPP_GET_ADDR(type_get_class_or_element_class, "il2cpp_type_get_class_or_element_class", hGameAssembly);
+        IL2CPP_GET_ADDR(type_get_name, "il2cpp_type_get_name", hGameAssembly);
+        IL2CPP_GET_ADDR(type_get_object, "il2cpp_type_get_object", hGameAssembly);
+        IL2CPP_GET_ADDR(type_get_type, "il2cpp_type_get_type", hGameAssembly);
+        IL2CPP_GET_ADDR(type_equals, "il2cpp_type_equals", hGameAssembly);
+        IL2CPP_GET_ADDR(type_is_byref, "il2cpp_type_is_byref", hGameAssembly);
 
         // methods
-        IL2CPP_GET_ADDR(method_call, "il2cpp_runtime_invoke", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method, "il2cpp_class_get_method_from_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_methods, "il2cpp_class_get_methods", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_name, "il2cpp_method_get_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_is_generic, "il2cpp_method_is_generic", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_is_inflated, "il2cpp_method_is_inflated", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_is_instance, "il2cpp_method_is_instance", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_param_count, "il2cpp_method_get_param_count", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_param_name, "il2cpp_method_get_param_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_param_type, "il2cpp_get_param", hGameAssembly);
-        IL2CPP_GET_ADDR(get_method_return_type, "il2cpp_method_get_return_type", hGameAssembly);
+        IL2CPP_GET_ADDR(runtime_invoke, "il2cpp_runtime_invoke", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_method_from_name, "il2cpp_class_get_method_from_name", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_methods, "il2cpp_class_get_methods", hGameAssembly);
+        IL2CPP_GET_ADDR(method_get_name, "il2cpp_method_get_name", hGameAssembly);
+        IL2CPP_GET_ADDR(method_is_generic, "il2cpp_method_is_generic", hGameAssembly);
+        IL2CPP_GET_ADDR(method_is_inflated, "il2cpp_method_is_inflated", hGameAssembly);
+        IL2CPP_GET_ADDR(method_is_instance, "il2cpp_method_is_instance", hGameAssembly);
+        IL2CPP_GET_ADDR(method_get_param_count, "il2cpp_method_get_param_count", hGameAssembly);
+        IL2CPP_GET_ADDR(method_get_param_name, "il2cpp_method_get_param_name", hGameAssembly);
+        IL2CPP_GET_ADDR(method_get_param_type, "il2cpp_get_param", hGameAssembly);  // original function name is not descriptive
+        IL2CPP_GET_ADDR(method_get_return_type, "il2cpp_method_get_return_type", hGameAssembly);
 
         // fields
-        IL2CPP_GET_ADDR(get_fields, "il2cpp_class_get_fields", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field, "il2cpp_class_get_field_from_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field_offset, "il2cpp_field_get_offset", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field_count, "il2cpp_class_num_fields", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field_name, "il2cpp_field_get_name", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field_object, "il2cpp_field_get_value_object", hGameAssembly);
-        IL2CPP_GET_ADDR(set_field_object, "il2cpp_field_set_value_object", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field_value, "il2cpp_field_get_value", hGameAssembly);
-        IL2CPP_GET_ADDR(set_field_value, "il2cpp_field_set_value", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field_type, "il2cpp_field_get_type", hGameAssembly);
-        IL2CPP_GET_ADDR(get_static_field, "il2cpp_field_static_get_value", hGameAssembly);
-        IL2CPP_GET_ADDR(set_static_field, "il2cpp_field_static_set_value", hGameAssembly);
-        IL2CPP_GET_ADDR(get_field_flags, "il2cpp_field_get_flags", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_fields, "il2cpp_class_get_fields", hGameAssembly);
+        IL2CPP_GET_ADDR(class_get_field_from_name, "il2cpp_class_get_field_from_name", hGameAssembly);
+        IL2CPP_GET_ADDR(field_get_offset, "il2cpp_field_get_offset", hGameAssembly);
+        IL2CPP_GET_ADDR(class_num_fields, "il2cpp_class_num_fields", hGameAssembly);
+        IL2CPP_GET_ADDR(field_get_name, "il2cpp_field_get_name", hGameAssembly);
+        IL2CPP_GET_ADDR(field_get_value_object, "il2cpp_field_get_value_object", hGameAssembly);
+        IL2CPP_GET_ADDR(field_set_value_object, "il2cpp_field_set_value_object", hGameAssembly);
+        IL2CPP_GET_ADDR(field_get_value, "il2cpp_field_get_value", hGameAssembly);
+        IL2CPP_GET_ADDR(field_set_value, "il2cpp_field_set_value", hGameAssembly);
+        IL2CPP_GET_ADDR(field_get_type, "il2cpp_field_get_type", hGameAssembly);
+        IL2CPP_GET_ADDR(field_static_get_value, "il2cpp_field_static_get_value", hGameAssembly);
+        IL2CPP_GET_ADDR(field_static_set_value, "il2cpp_field_static_set_value", hGameAssembly);
+        IL2CPP_GET_ADDR(field_get_flags, "il2cpp_field_get_flags", hGameAssembly);
 
         // strings
-        IL2CPP_GET_ADDR(get_string_chars, "il2cpp_string_chars", hGameAssembly);
-        IL2CPP_GET_ADDR(create_string, "il2cpp_string_new", hGameAssembly);
+        IL2CPP_GET_ADDR(string_chars, "il2cpp_string_chars", hGameAssembly);
+        IL2CPP_GET_ADDR(string_new, "il2cpp_string_new", hGameAssembly);
 
         initialized = true;
         return true;
@@ -265,12 +264,12 @@ namespace IL2CPP {
             }
 
             virtual void* invoke_static(void** params = nullptr) const {
-                if (!IL2CPP::method_call || !m_obj)
+                if (!IL2CPP::runtime_invoke || !m_obj)
                     return nullptr;
 
                 void* exc = nullptr;
 
-                const auto result = IL2CPP::method_call(m_obj, nullptr, params, &exc);
+                const auto result = IL2CPP::runtime_invoke(m_obj, nullptr, params, &exc);
 
                 if (exc != nullptr) {
                     GHLOG(GH_LOG_WARNING, GH_TAG) << "Method::invoke_static() raised exception: " << exc << "\n";
@@ -280,12 +279,12 @@ namespace IL2CPP {
             }
 
             virtual const void* invoke(void* self, void** params = nullptr) {
-                if (!IL2CPP::method_call || !m_obj)
+                if (!IL2CPP::runtime_invoke || !m_obj)
                     return nullptr;
 
                 void* exc = nullptr;
 
-                const auto result = IL2CPP::method_call(m_obj, self, params, &exc);
+                const auto result = IL2CPP::runtime_invoke(m_obj, self, params, &exc);
 
                 if (exc != nullptr) {
                     GHLOG(GH_LOG_WARNING, GH_TAG) << "Method::invoke(" << self << ") raised exception: " << exc << "\n";
@@ -295,65 +294,65 @@ namespace IL2CPP {
             }
 
             virtual uint32_t get_param_count() const {
-                if (!IL2CPP::get_method_param_count || !m_obj)
+                if (!IL2CPP::method_get_param_count || !m_obj)
                     return -1;
 
-                return IL2CPP::get_method_param_count(m_obj);
+                return IL2CPP::method_get_param_count(m_obj);
             }
 
             virtual const char* get_param_name(int index) const {
-                if (!IL2CPP::get_method_param_name || !m_obj)
+                if (!IL2CPP::method_get_param_name || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_method_param_name(m_obj, index);
+                return IL2CPP::method_get_param_name(m_obj, index);
             }
 
             virtual const char* get_param_type(int index) const {
-                if (!IL2CPP::get_method_param_type || !m_obj)
+                if (!IL2CPP::method_get_param_type || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_method_param_type(m_obj, index);
+                return IL2CPP::method_get_param_type(m_obj, index);
             }
 
             virtual bool is_generic() const {
-                if (!IL2CPP::get_method_is_generic || !m_obj)
+                if (!IL2CPP::method_is_generic || !m_obj)
                     return false;
 
-                return IL2CPP::get_method_is_generic(m_obj);
+                return IL2CPP::method_is_generic(m_obj);
             }
 
             virtual bool is_inflated() const {
-                if (!IL2CPP::get_method_is_inflated || !m_obj)
+                if (!IL2CPP::method_is_inflated || !m_obj)
                     return false;
 
-                return IL2CPP::get_method_is_inflated(m_obj);
+                return IL2CPP::method_is_inflated(m_obj);
             }
 
             virtual bool is_instance() const {
-                if (!IL2CPP::get_method_is_instance || !m_obj)
+                if (!IL2CPP::method_is_instance || !m_obj)
                     return false;
 
-                return IL2CPP::get_method_is_instance(m_obj);
+                return IL2CPP::method_is_instance(m_obj);
             }
 
             virtual const char* get_name() {
-                if (!IL2CPP::get_method_name || !m_obj)
+                if (!IL2CPP::method_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name)
                     return m_name;
 
-                return m_name = IL2CPP::get_method_name(m_obj);
+                return m_name = IL2CPP::method_get_name(m_obj);
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_method_name || !m_obj)
+                if (!IL2CPP::method_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name)
                     return m_name;
 
-                return IL2CPP::get_method_name(m_obj);
+                return IL2CPP::method_get_name(m_obj);
             }
     };  // class Method
     std::vector<IMethod*> Method::objects;
@@ -377,41 +376,41 @@ namespace IL2CPP {
             }
 
             virtual void* get_static_value() const {
-                if (!IL2CPP::get_static_field || !m_obj)
+                if (!IL2CPP::field_static_get_value || !m_obj)
                     return nullptr;
 
                 void* val = nullptr;
 
-                IL2CPP::get_static_field(m_obj, &val);
+                IL2CPP::field_static_get_value(m_obj, &val);
 
                 return val;
             }
 
             virtual void* set_static_value(void* value) const {
-                if (!IL2CPP::set_static_field || !m_obj)
+                if (!IL2CPP::field_static_set_value || !m_obj)
                     return nullptr;
 
-                return IL2CPP::set_static_field(m_obj, value);
+                return IL2CPP::field_static_set_value(m_obj, value);
             }
 
             virtual size_t get_offset() const {
-                if (!IL2CPP::get_field_offset || !m_obj)
+                if (!IL2CPP::field_get_offset || !m_obj)
                     return 0x0;
 
-                return IL2CPP::get_field_offset(m_obj);
+                return IL2CPP::field_get_offset(m_obj);
             }
             
             virtual void* get_object(const void* self) const {
-                if (!IL2CPP::get_field_object || !m_obj)
+                if (!IL2CPP::field_get_value_object || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_field_object(m_obj, self);
+                return IL2CPP::field_get_value_object(m_obj, self);
             }
 
             virtual IType* get_type() const;
 
             virtual const char* get_attribute() const {
-                if (!IL2CPP::get_field_flags || !m_obj)
+                if (!IL2CPP::field_get_flags || !m_obj)
                     return nullptr;
 
                 // static buffer to return but need to re-get data every time
@@ -419,7 +418,7 @@ namespace IL2CPP {
                 static char attr[100];
                 memset(attr, 0, sizeof(attr));
 
-                auto attrs = IL2CPP::get_field_flags(m_obj);
+                auto attrs = IL2CPP::field_get_flags(m_obj);
 
                 auto access = attrs & FIELD_ATTRIBUTE_FIELD_ACCESS_MASK;
                 switch (access) {
@@ -455,26 +454,26 @@ namespace IL2CPP {
             }
 
             virtual const char* get_name() {
-                if (!IL2CPP::get_field_name || !m_obj)
+                if (!IL2CPP::field_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name) {
                     return m_name;
                 }
 
-                m_name = IL2CPP::get_field_name(m_obj);
+                m_name = IL2CPP::field_get_name(m_obj);
                 return m_name;
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_field_name || !m_obj)
+                if (!IL2CPP::field_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name) {
                     return m_name;
                 }
 
-                const char* ret = IL2CPP::get_field_name(m_obj);
+                const char* ret = IL2CPP::field_get_name(m_obj);
                 return ret;
             }
     };  // class Field
@@ -500,35 +499,35 @@ namespace IL2CPP {
             }
 
             virtual IMethod* get_method(const char* name, int argc = 0) const {
-                if (!IL2CPP::get_method || !m_obj)
+                if (!IL2CPP::class_get_method_from_name || !m_obj)
                     return nullptr;
 
-                auto method = IL2CPP::get_method(m_obj, name, argc);
+                auto method = IL2CPP::class_get_method_from_name(m_obj, name, argc);
 
                 return new Method(method);
             }
 
             virtual IField* get_field(const char* name) const {
-                if (!IL2CPP::get_field || !m_obj)
+                if (!IL2CPP::class_get_field_from_name || !m_obj)
                     return nullptr;
 
-                auto field = IL2CPP::get_field(m_obj, name);
+                auto field = IL2CPP::class_get_field_from_name(m_obj, name);
 
                 return new Field(field);
             }
 
             virtual std::vector<IField*> get_fields() {
-                if (m_fields.size() || !IL2CPP::get_field_count || !IL2CPP::get_fields || !m_obj)
+                if (m_fields.size() || !IL2CPP::class_num_fields || !IL2CPP::class_get_fields || !m_obj)
                     return m_fields;
 
-                const size_t count = IL2CPP::get_field_count(m_obj);
+                const size_t count = IL2CPP::class_num_fields(m_obj);
                 if (count) {
                     m_fields.reserve(count);
 
                     void* iter = nullptr;
                     void* field = nullptr;
 
-                    while ((field = IL2CPP::get_fields(m_obj, &iter))) {
+                    while ((field = IL2CPP::class_get_fields(m_obj, &iter))) {
                         m_fields.push_back(new Field(field));
                     }
                 }
@@ -540,21 +539,21 @@ namespace IL2CPP {
                 if (m_fields.size())
                     return m_fields.size();
 
-                if (!IL2CPP::get_field_count || !m_obj)
+                if (!IL2CPP::class_num_fields || !m_obj)
                     return -1;
 
-                return IL2CPP::get_field_count(m_obj);
+                return IL2CPP::class_num_fields(m_obj);
             }
 
             virtual IClass* get_nested_class(const char* name) const {
-                if (!IL2CPP::get_nested_types || !IL2CPP::get_class_name || !m_obj)
+                if (!IL2CPP::class_get_nested_types || !IL2CPP::class_get_name || !m_obj)
                     return nullptr;
 
                 void* iter = nullptr;
                 void* type = nullptr;
                 
-                while ((type = IL2CPP::get_nested_types(m_obj, &iter))) {
-                    const auto class_name = IL2CPP::get_class_name(type);
+                while ((type = IL2CPP::class_get_nested_types(m_obj, &iter))) {
+                    const auto class_name = IL2CPP::class_get_name(type);
 
                     if (strcmp(class_name, name) == 0)
                         return new Class(type);
@@ -564,23 +563,23 @@ namespace IL2CPP {
             }
 
             virtual const char* get_name() {
-                if (!IL2CPP::get_class_name || !m_obj)
+                if (!IL2CPP::class_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name)
                     return m_name;
 
-                return m_name = IL2CPP::get_class_name(m_obj);
+                return m_name = IL2CPP::class_get_name(m_obj);
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_class_name || !m_obj)
+                if (!IL2CPP::class_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name)
                     return m_name;
 
-                return IL2CPP::get_class_name(m_obj);
+                return IL2CPP::class_get_name(m_obj);
             }
     };  // class Class
     std::vector<IClass*> Class::objects;
@@ -604,70 +603,70 @@ namespace IL2CPP {
             }
 
             virtual IClass* get_class() const {
-                if (!IL2CPP::get_type_class || !m_obj)
+                if (!IL2CPP::type_get_class_or_element_class || !m_obj)
                     return nullptr;
 
-                auto type = IL2CPP::get_type_class(m_obj);
+                auto type = IL2CPP::type_get_class_or_element_class(m_obj);
 
                 return new Class(type);
             }
 
             virtual void* get_object() const {
-                if (!IL2CPP::get_type_object || !m_obj)
+                if (!IL2CPP::type_get_object || !m_obj)
                     return nullptr;
 
-                return IL2CPP::get_type_object(m_obj);
+                return IL2CPP::type_get_object(m_obj);
             }
 
             virtual int get_type() const {
-                if (!IL2CPP::get_type_type || !m_obj)
+                if (!IL2CPP::type_get_type || !m_obj)
                     return -1;
 
-                return IL2CPP::get_type_type(m_obj);
+                return IL2CPP::type_get_type(m_obj);
             }
 
             virtual uint32_t get_attributes() const {
-                if (!IL2CPP::get_type_attributes || !m_obj)
+                if (!IL2CPP::type_get_attrs || !m_obj)
                     return 0;
 
-                return IL2CPP::get_type_attributes(m_obj);
+                return IL2CPP::type_get_attrs(m_obj);
             }
 
             virtual bool compare_type(IType* other) {
-                if (!IL2CPP::get_type_equals || !m_obj)
+                if (!IL2CPP::type_equals || !m_obj)
                     return false;
 
                 // we need to look into other's object
                 Type* _other = (Type*)other;
 
-                return IL2CPP::get_type_equals(m_obj, _other->m_obj);
+                return IL2CPP::type_equals(m_obj, _other->m_obj);
             }
 
             virtual bool is_by_ref() const {
-                if (!IL2CPP::get_type_is_byref || !m_obj)
+                if (!IL2CPP::type_is_byref || !m_obj)
                     return false;
 
-                return IL2CPP::get_type_is_byref(m_obj);
+                return IL2CPP::type_is_byref(m_obj);
             }
 
             virtual const char* get_name() {
-                if (!IL2CPP::get_type_name || !m_obj)
+                if (!IL2CPP::type_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name)
                     return m_name;
 
-                return m_name = IL2CPP::get_type_name(m_obj);
+                return m_name = IL2CPP::type_get_name(m_obj);
             }
 
             virtual const char* get_name() const {
-                if (!IL2CPP::get_type_name || !m_obj)
+                if (!IL2CPP::type_get_name || !m_obj)
                     return nullptr;
 
                 if (m_name)
                     return m_name;
 
-                return IL2CPP::get_type_name(m_obj);
+                return IL2CPP::type_get_name(m_obj);
             }
     };  // class Type
     std::vector<IType*> Type::objects;
@@ -675,10 +674,10 @@ namespace IL2CPP {
 
     // moved after definition of Type since it creates a Type
     IType* Field::get_type() const {
-        if (!IL2CPP::get_field_type || !m_obj)
+        if (!IL2CPP::field_get_type || !m_obj)
             return nullptr;
 
-        auto type = IL2CPP::get_field_type(m_obj);
+        auto type = IL2CPP::field_get_type(m_obj);
 
         return new Type(type);
     }
@@ -714,7 +713,7 @@ namespace IL2CPP {
             }
 
             virtual std::vector<IClass*> get_classes() {
-                if (m_classes.size() || !IL2CPP::image_get_class_count || !IL2CPP::image_get_class || !IL2CPP::get_class_name || !m_obj)
+                if (m_classes.size() || !IL2CPP::image_get_class_count || !IL2CPP::image_get_class || !IL2CPP::class_get_name || !m_obj)
                     return m_classes;
 
                 size_t count = IL2CPP::image_get_class_count(m_obj);
@@ -726,7 +725,7 @@ namespace IL2CPP {
                         if (!address)
                             continue;
 
-                        auto name = IL2CPP::get_class_name(address);
+                        auto name = IL2CPP::class_get_name(address);
                         if (!name)
                             continue;
 
