@@ -407,6 +407,7 @@ namespace IL2CPP {
                 return IL2CPP::field_get_value_object(m_obj, self);
             }
 
+            // defined later after Type definition
             virtual IType* get_type() const;
 
             virtual const char* get_attribute() const {
