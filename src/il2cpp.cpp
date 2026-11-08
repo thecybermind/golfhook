@@ -379,7 +379,7 @@ namespace IL2CPP {
                 if (!IL2CPP::get_static_field || !m_obj)
                     return nullptr;
 
-                void* val = NULL;
+                void* val = nullptr;
 
                 IL2CPP::get_static_field(m_obj, &val);
 
@@ -483,8 +483,8 @@ namespace IL2CPP {
     class Class : public IClass {
         private:
             void* m_obj;
-            const char* m_name;
             std::vector<IField*> m_fields;
+            const char* m_name;
             static std::vector<IClass*> objects;
         public:
             Class() = delete;
@@ -517,24 +517,19 @@ namespace IL2CPP {
             }
 
             virtual std::vector<IField*> get_fields() {
-                if (m_fields.size()) {
-                    return m_fields;
-                }
-
-                if (!IL2CPP::get_field_count || !IL2CPP::get_fields || !m_obj)
+                if (m_fields.size() || !IL2CPP::get_field_count || !IL2CPP::get_fields || !m_obj)
                     return m_fields;
 
                 const size_t count = IL2CPP::get_field_count(m_obj);
-                if (count)
+                if (count) {
                     m_fields.reserve(count);
 
-                void* iter = NULL;
-                void* field = nullptr;
+                    void* iter = nullptr;
+                    void* field = nullptr;
 
-                size_t index = 0;
-
-                while (field = IL2CPP::get_fields(m_obj, &iter)) {
-                    m_fields.push_back(new Field(field));
+                    while ((field = IL2CPP::get_fields(m_obj, &iter))) {
+                        m_fields.push_back(new Field(field));
+                    }
                 }
 
                 return m_fields;
@@ -554,9 +549,10 @@ namespace IL2CPP {
                 if (!IL2CPP::get_nested_types || !IL2CPP::get_class_name || !m_obj)
                     return nullptr;
 
-                void* iter = NULL;
-
-                while (auto type = IL2CPP::get_nested_types(m_obj, &iter)) {
+                void* iter = nullptr;
+                void* type = nullptr;
+                
+                while ((type = IL2CPP::get_nested_types(m_obj, &iter))) {
                     const auto class_name = IL2CPP::get_class_name(type);
 
                     if (strcmp(class_name, name) == 0)
@@ -717,29 +713,27 @@ namespace IL2CPP {
             }
 
             virtual std::vector<IClass*> get_classes() {
-                if (m_classes.size())
-                    return m_classes;
-
-                if (!IL2CPP::get_class_count || !IL2CPP::get_class_from_image || !IL2CPP::get_class_name || !m_obj)
+                if (m_classes.size() || !IL2CPP::get_class_count || !IL2CPP::get_class_from_image || !IL2CPP::get_class_name || !m_obj)
                     return m_classes;
 
                 size_t count = IL2CPP::get_class_count(m_obj);
-                if (count)
+                if (count) {
                     m_classes.reserve(count);
 
-                for (size_t index = 0U; index < count; ++index) {
-                    auto address = IL2CPP::get_class_from_image(m_obj, index);
-                    if (!address)
-                        continue;
+                    for (size_t index = 0U; index < count; ++index) {
+                        auto address = IL2CPP::get_class_from_image(m_obj, index);
+                        if (!address)
+                            continue;
 
-                    auto name = IL2CPP::get_class_name(address);
-                    if (!name)
-                        continue;
+                        auto name = IL2CPP::get_class_name(address);
+                        if (!name)
+                            continue;
 
-                    if (!strcmp(name, "<Module>"))
-                        continue;
+                        if (!strcmp(name, "<Module>"))
+                            continue;
 
-                    m_classes.push_back(new Class(address));
+                        m_classes.push_back(new Class(address));
+                    }
                 }
 
                 return m_classes;
@@ -782,10 +776,14 @@ namespace IL2CPP {
 
         const auto assemblies = IL2CPP::get_assemblies(domain, &count);
 
-        for (size_t index = 0U; index < count; ++index) {
-            auto image = IL2CPP::get_image(assemblies[index]);
-            if (image)
-                m_images.push_back(new Image(image));
+        if (count) {
+            m_images.reserve(count);
+
+            for (size_t index = 0U; index < count; ++index) {
+                auto image = IL2CPP::get_image(assemblies[index]);
+                if (image)
+                    m_images.push_back(new Image(image));
+            }
         }
     }
 

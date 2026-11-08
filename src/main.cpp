@@ -31,7 +31,7 @@ namespace GolfHook {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") called.\n";
 
         // get original function out of hook map
-        decltype(&il2cpp_init_hook) orig = (decltype(orig))hook_map_proc[&il2cpp_init_hook];
+        decltype(&il2cpp_init_hook) orig = (decltype(orig))hook_map_proc[(void*)&il2cpp_init_hook];
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() called.\n";
         int64_t ret = orig(domain); // call original function
@@ -90,7 +90,7 @@ namespace GolfHook {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() called.\n";
 
         // get original function out of hook map
-        decltype(&il2cpp_shutdown_hook) orig = (decltype(orig))hook_map_proc[&il2cpp_shutdown_hook];
+        decltype(&il2cpp_shutdown_hook) orig = (decltype(orig))hook_map_proc[(void*)&il2cpp_shutdown_hook];
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() called.\n";
         orig(); // call original function

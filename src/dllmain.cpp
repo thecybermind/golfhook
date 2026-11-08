@@ -10,20 +10,22 @@ Created By:
 */
 
 #if defined(_WIN32)
- #include <MinHook/MinHook.h>
+ #define WIN32_LEAN_AND_MEAN
+ #include <windows.h>
+ // #include <MinHook/MinHook.h>
  // #pragma comment(lib, "..\\lib\\MinHook.x64.lib")
- #pragma comment(lib, "..\\lib\\libMinHook.x64.lib")
- #define WINAPI __stdcall
+ // #pragma comment(lib, "..\\lib\\libMinHook.x64.lib")
 #elif defined(__linux__)
- #error Add linux headers
+ #include <dlfcn.h>
  #define WINAPI
+ enum {
+     DLL_PROCESS_DETACH,
+     DLL_PROCESS_ATTACH,
+ };
 #endif
 
-#include <stdio.h>
-#include <fcntl.h>
-#include <io.h>
+#include <cstdio>
 #include <iostream>
-#include <fstream>
 
 #include "dllmain.h"
 #include "iat_hook.h"
@@ -43,8 +45,8 @@ static struct {
     const char* name;
     void* proc;
 } hooks[] = {
-    { "il2cpp_init", GolfHook::il2cpp_init_hook },
-    { "il2cpp_shutdown", GolfHook::il2cpp_shutdown_hook },
+    { "il2cpp_init", (void*)GolfHook::il2cpp_init_hook },
+    { "il2cpp_shutdown", (void*)GolfHook::il2cpp_shutdown_hook },
 };
 
 
@@ -105,13 +107,13 @@ C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLi
     }
 
 #if defined(_WIN32)
-    const char* func = "GetProcAddress";
+    const char* hookfunc = "GetProcAddress";
 #elif defined(__linux__)
-    const char* func = "dlsym";
+    const char* hookfunc = "dlsym";
 #endif
     // hook GetProcAddress called from UnityPlayer_orig.dll
-    if (!install_IAT_hook(hUnityPlayer, "kernel32.dll", func, &UnityPlayer_GetProcAddress_hook)) {
-        GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to hook UnityPlayer_orig.dll's " << func << "! Shutting down.\n";
+    if (!install_IAT_hook(hUnityPlayer, "kernel32.dll", hookfunc, (void*)&UnityPlayer_GetProcAddress_hook)) {
+        GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to hook UnityPlayer_orig.dll's " << hookfunc << "! Shutting down.\n";
         return -1;
     }
 
@@ -161,7 +163,7 @@ static void RedirectIOToConsole() {
 
 
 // Initialize console, logging, and config
-int __stdcall DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
+int WINAPI DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
         hMe = hModule;
 
@@ -200,7 +202,7 @@ int __stdcall DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook shutting down.\n";
     }
 
-    return TRUE;
+    return 1;
 }
 
 #if defined(__linux__)
@@ -210,14 +212,14 @@ C_DLLEXPORT void __attribute__((constructor)) dll_init() {
     memset(&dli, 0, sizeof(dli));
 
     if (!dladdr((void*)dll_init, &dli))
-        return nullptr;
+        return;
 
-    (void)DllMain(dli.dli_fbase, 1 /* DLL_PROCESS_ATTACH */, nullptr);
+    (void)DllMain(dli.dli_fbase, DLL_PROCESS_ATTACH, nullptr);
 }
 
 // GCC destructor to route to DllMain
 C_DLLEXPORT void __attribute__((destructor)) dll_fini() {
-    (void)DllMain(hMe, 0 /* DLL_PROCESS_DETACH */, nullptr);
+    (void)DllMain(hMe, DLL_PROCESS_DETACH, nullptr);
 }
 #endif // __linux__
 

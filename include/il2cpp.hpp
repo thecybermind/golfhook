@@ -52,6 +52,7 @@ namespace IL2CPP {
             virtual bool is_instance() const = 0;
             virtual const char* get_name() = 0;
             virtual const char* get_name() const = 0;
+            virtual ~IMethod() {};
     };
 
     class IType;
@@ -65,6 +66,7 @@ namespace IL2CPP {
             virtual const char* get_attribute() const = 0;
             virtual const char* get_name() = 0;
             virtual const char* get_name() const = 0;
+            virtual ~IField() {};
     };
 
     class IClass {
@@ -76,6 +78,7 @@ namespace IL2CPP {
             virtual IClass* get_nested_class(const char* name) const = 0;
             virtual const char* get_name() = 0;
             virtual const char* get_name() const = 0;
+            virtual ~IClass() {};
     };
 
     class IType {
@@ -88,6 +91,7 @@ namespace IL2CPP {
             virtual bool is_by_ref() const = 0;
             virtual const char* get_name() = 0;
             virtual const char* get_name() const = 0;
+            virtual ~IType() {};
     };
 
     class IImage {
@@ -96,6 +100,7 @@ namespace IL2CPP {
             virtual std::vector<IClass*> get_classes() = 0;
             virtual size_t get_class_count() const = 0;
             virtual const char* get_name() const = 0;
+            virtual ~IImage() {};
     };
 
     class IManager {

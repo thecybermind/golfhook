@@ -15,7 +15,8 @@ Created By:
  #define WIN32_LEAN_AND_MEAN
  #include <windows.h>
 #elif defined(__linux__)
- #error Add linux headers
+ // #define _GNU_SOURCE
+ #include <dlfcn.h>
 #endif
 
 #include <cctype>
