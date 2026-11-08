@@ -9,8 +9,6 @@ Created By:
 
 */
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <string>
 #include <map>
 #include <memory>
@@ -26,14 +24,14 @@ namespace GolfHook {
     IL2CPP::Manager Manager;
     IL2CPP::IImage* Assembly;
 
-    std::map<FARPROC, FARPROC> hook_map_proc;
-    std::map<std::string, FARPROC> hook_map_name;
+    std::map<void*, void*> hook_map_proc;
+    std::map<std::string, void*> hook_map_name;
 
     int64_t il2cpp_init_hook(const char* domain) {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") called.\n";
 
         // get original function out of hook map
-        decltype(&il2cpp_init_hook) orig = (decltype(orig))hook_map_proc[(FARPROC)&il2cpp_init_hook];
+        decltype(&il2cpp_init_hook) orig = (decltype(orig))hook_map_proc[&il2cpp_init_hook];
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init() called.\n";
         int64_t ret = orig(domain); // call original function
@@ -92,7 +90,7 @@ namespace GolfHook {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() called.\n";
 
         // get original function out of hook map
-        decltype(&il2cpp_shutdown_hook) orig = (decltype(orig))hook_map_proc[(FARPROC)&il2cpp_shutdown_hook];
+        decltype(&il2cpp_shutdown_hook) orig = (decltype(orig))hook_map_proc[&il2cpp_shutdown_hook];
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown() called.\n";
         orig(); // call original function

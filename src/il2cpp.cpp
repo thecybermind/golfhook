@@ -27,12 +27,11 @@ Created By:
 
 #define _CRT_SECURE_NO_WARNINGS 1
 #include <cstring>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <cstdint>
 #include <vector>
 
 #include "il2cpp.hpp"
+#include "util.hpp"
 #include "log.hpp"
 
 
@@ -44,7 +43,7 @@ And have a separate virtual interface for interacting with these objects?
   ret_type (* name) args = nullptr;
 
 #define IL2CPP_GET_ADDR( name, IL2CPP_export, handle ) \
-  name = (decltype(name))(GetProcAddress( handle, IL2CPP_export ) );
+  name = (decltype(name))Util::dll_symbol( handle, IL2CPP_export );
 
 
 namespace IL2CPP {
@@ -146,7 +145,7 @@ namespace IL2CPP {
         if (initialized)
             return true;
 
-        const HMODULE hGameAssembly = GetModuleHandleA("GameAssembly.dll");
+        void* hGameAssembly = Util::dll_handle("GameAssembly.dll");
         if (!hGameAssembly)
             return false;
 
@@ -455,38 +454,26 @@ namespace IL2CPP {
             }
 
             virtual const char* get_name() {
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name entered\n";
-
                 if (!IL2CPP::get_field_name || !m_obj)
                     return nullptr;
 
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field object and get_field_name valid\n";
-
                 if (m_name) {
-                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name returning cached name: " << m_name << "\n";
                     return m_name;
                 }
 
                 m_name = IL2CPP::get_field_name(m_obj);
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name returning: " << m_name << "\n";
                 return m_name;
             }
 
             virtual const char* get_name() const {
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::get_name entered\n";
-
                 if (!IL2CPP::get_field_name || !m_obj)
                     return nullptr;
 
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field object and IL2CPP::get_field_name valid\n";
-
                 if (m_name) {
-                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::m_name cached, using: " << m_name << "\n";
                     return m_name;
                 }
 
                 const char* ret = IL2CPP::get_field_name(m_obj);
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Field::name returning: " << ret << "\n";
                 return ret;
             }
     };  // class Field
@@ -530,23 +517,16 @@ namespace IL2CPP {
             }
 
             virtual std::vector<IField*> get_fields() {
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::get_fields entered\n";
-
                 if (m_fields.size()) {
-                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::get_fields returning cached list: size "  << m_fields.size() << "\n";
                     return m_fields;
                 }
 
                 if (!IL2CPP::get_field_count || !IL2CPP::get_fields || !m_obj)
                     return m_fields;
 
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class object, IL2CPP::get_field_count, and IL2CPP::get_fields valid\n";
-
                 const size_t count = IL2CPP::get_field_count(m_obj);
                 if (count)
                     m_fields.reserve(count);
-
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::m_fields reserved " << m_fields.capacity() << " items\n";
 
                 void* iter = NULL;
                 void* field = nullptr;
@@ -554,11 +534,8 @@ namespace IL2CPP {
                 size_t index = 0;
 
                 while (field = IL2CPP::get_fields(m_obj, &iter)) {
-                    GHLOG(GH_LOG_DEBUG, GH_TAG) << "New Field object created\n";
                     m_fields.push_back(new Field(field));
                 }
-
-                GHLOG(GH_LOG_DEBUG, GH_TAG) << "Class::get_fields returning: size " << m_fields.size() << "\n";
 
                 return m_fields;
             }

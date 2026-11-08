@@ -25,6 +25,8 @@ Created By:
  * that is never set. Since we have separate objects now, we must call il2cpp_image_get_name to get the name.
  */
 
+#pragma once
+
 #ifndef GOLFHOOK_IL2CPP_HPP
 #define GOLFHOOK_IL2CPP_HPP
 

@@ -9,21 +9,11 @@ Created By:
 
 */
 
+#pragma once
+
 #ifndef GOLFHOOK_DLLMAIN_H
 #define GOLFHOOK_DLLMAIN_H
 
-#define WIN32_LEAN_AND_MEAN
-#include <windef.h>
-
-#define DLLEXPORT __declspec(dllexport)
-#ifdef __cplusplus
-#define C_DLLEXPORT extern "C" DLLEXPORT
-#else
-#define C_DLLEXPORT DLLEXPORT
-#endif
-
-extern HMODULE hMe;
-
-void RedirectIOToConsole();
+extern void* hMe;
 
 #endif // GOLFHOOK_DLLMAIN_H

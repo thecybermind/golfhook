@@ -9,12 +9,15 @@ Created By:
 
 */
 
+#if defined(_WIN32)
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <string.h>
+#include "iat_hook.h"
 
 
-FARPROC install_IAT_hook(HMODULE target_module, const char* dll_name, const char* function_name, FARPROC function_hook) {
+void* install_IAT_hook(void* target_module, const char* dll_name, const char* function_name, void* function_hook) {
     char* module_base = (char*)target_module;   // module base as a char* for adding RVAs
     FARPROC ret = nullptr;                      // store and return old function address
     MEMORY_BASIC_INFORMATION thunkMemInfo;
@@ -66,3 +69,5 @@ FARPROC install_IAT_hook(HMODULE target_module, const char* dll_name, const char
 
     return nullptr;
 }
+
+#endif // _WIN32

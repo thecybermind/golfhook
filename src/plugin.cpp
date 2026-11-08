@@ -29,16 +29,12 @@ constexpr int ROTATING_BUFFER_NUM = 16;  // must be power of 2
 constexpr int ROTATING_BUFFER_MASK = ROTATING_BUFFER_NUM - 1;
 constexpr int ROTATING_BUFFER_SIZE = 1024;
 
+struct plugin_funcs_impl : public plugin_funcs {
+    virtual void WriteGHLog(plugin_id plid, int severity, const char* fmt, ...);
+    virtual const char* VarArgs(plugin_id plid [[maybe_unused]], const char* fmt, ...);
+} s_plugin_funcs_impl;
 
-static void s_plugin_helper_WriteGHLog(plugin_id plid, int severity, const char* fmt, ...);
-static const char* s_plugin_helper_VarArgs(plugin_id plid [[maybe_unused]], const char* fmt, ...);
-
-
-// Struct of plugin helper functions
-static plugin_funcs s_plugin_funcs = {
-    s_plugin_helper_WriteGHLog,
-    s_plugin_helper_VarArgs,
-};
+static plugin_funcs* s_plugin_funcs = &s_plugin_funcs_impl;
 
 
 // Variables made available to plugins
@@ -53,7 +49,7 @@ std::vector<Plugin> g_plugins;
 
 
 Plugin::Plugin() : dll(nullptr), GolfHook_Query(nullptr), GolfHook_Attach(nullptr), GolfHook_Detach(nullptr),
-    plugininfo(nullptr), pluginfuncs(nullptr), pluginvars(nullptr)
+    plugininfo(nullptr)
 {
 }
 
@@ -83,8 +79,6 @@ Plugin& Plugin::operator=(Plugin&& other) noexcept {
     std::swap(this->GolfHook_Attach, other.GolfHook_Attach);
     std::swap(this->GolfHook_Detach, other.GolfHook_Detach);
     std::swap(this->plugininfo, other.plugininfo);
-    std::swap(this->pluginfuncs, other.pluginfuncs);
-    std::swap(this->pluginvars, other.pluginvars);
 
     return *this;
 }
@@ -115,7 +109,7 @@ bool Plugin::Load(std::string file) {
     }
 
     // call initial plugin entry point, get interface version and struct pointers
-    this->GolfHook_Query(&this->plugininfo, &this->pluginfuncs, &this->pluginvars);
+    this->GolfHook_Query(&this->plugininfo, s_plugin_funcs, &s_plugin_vars);
     if (!this->plugininfo) {
         GHLOG(GH_LOG_ERROR, GH_TAG) << "plugin_load(\"" << Util::path_basename(file) << "\"): GolfHook_Query() returned NULL plugininfo\n";
         return false;
@@ -134,19 +128,6 @@ bool Plugin::Load(std::string file) {
 
     // at this point, major versions match and the plugin's minor version is less than or equal to GolfHook's.
 
-    // make sure the plugin gave us the funcs and vars struct pointers
-    if (!this->pluginfuncs) {
-        GHLOG(GH_LOG_ERROR, GH_TAG) << "plugin_load(\"" << Util::path_basename(file) << "\"): GolfHook_Query() returned NULL pluginfuncs\n";
-        return false;
-    }
-    if (!this->pluginvars) {
-        GHLOG(GH_LOG_ERROR, GH_TAG) << "plugin_load(\"" << Util::path_basename(file) << "\"): GolfHook_Query() returned NULL pluginvars\n";
-        return false;
-    }
-
-    // now fill the plugin's function and variable tables
-    *this->pluginfuncs = s_plugin_funcs;
-    *this->pluginvars = s_plugin_vars;
     // get any updates to pluginvars that may have happened after static initialization
     UpdateVars();
 
@@ -182,13 +163,11 @@ void Plugin::Unload() {
     this->GolfHook_Attach = nullptr;
     this->GolfHook_Detach = nullptr;
     this->plugininfo = nullptr;
-    this->pluginfuncs = nullptr;
-    this->pluginvars = nullptr;
 }
 
 
 void Plugin::UpdateVars() {
-    this->pluginvars->IL2CPP_assembly = GolfHook::Assembly;
+    s_plugin_vars.IL2CPP_assembly = GolfHook::Assembly;
 }
 
 
@@ -200,7 +179,7 @@ void Plugin::UpdateVars() {
 * @param fmt Format string
 * @param ... Format arguments
 */
-static void s_plugin_helper_WriteGHLog(plugin_id plid, int severity, const char* fmt, ...) {
+void plugin_funcs_impl::WriteGHLog(plugin_id plid, int severity, const char* fmt, ...) {
     if (!fmt) {
         GHLOG(GH_LOG_TRACE, GH_TAG) << "Plugin \"" << ((plugin_info*)plid)->name << "\" called WriteGHLog() with null fmt\n";
         return;
@@ -239,7 +218,7 @@ static void s_plugin_helper_WriteGHLog(plugin_id plid, int severity, const char*
 * @param ... Format arguments
 * @return Pointer to the constructed string
 */
-static const char* s_plugin_helper_VarArgs(plugin_id plid [[maybe_unused]], const char* fmt, ...) {
+const char* plugin_funcs_impl::VarArgs(plugin_id plid [[maybe_unused]], const char* fmt, ...) {
     if (!fmt)
         fmt = "";
 

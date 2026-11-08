@@ -9,6 +9,8 @@ Created By:
 
 */
 
+#pragma once
+
 #ifndef GOLFHOOK_GHAPI_HPP
 #define GOLFHOOK_GHAPI_HPP
 
@@ -22,7 +24,7 @@ Created By:
 #else
  #error Unknown OS?
 #endif
-#ifdef __cplusplus
+#if defined(__cplusplus)
  #define C_DLLEXPORT extern "C" DLLEXPORT
 #else
  #define C_DLLEXPORT DLLEXPORT
@@ -65,13 +67,13 @@ enum {
 };
 
 /* Prototype struct for GolfHook plugin utility functions */
-typedef struct {
-    void (*WriteGHLog)(plugin_id plid, int severity, const char* fmt, ...); // Write to the GolfHook log with given severity
-    const char* (*VarArgs)(plugin_id plid, const char* fmt, ...);           // Simple vsprintf helper with rotating buffer
-} plugin_funcs;
+struct plugin_funcs {
+    virtual void WriteGHLog(plugin_id plid, int severity, const char* fmt, ...) = 0; // Write to the GolfHook log with given severity
+    virtual const char* VarArgs(plugin_id plid, const char* fmt, ...) = 0;           // Simple vsprintf helper with rotating buffer
+};
 
-#define GH_WRITEGHLOG(sev, fmt, ...)    (g_pluginfuncs.WriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__)  // Write to the GolfHook log with given severity
-#define GH_VARARGS(fmt, ...)            (g_pluginfuncs.VarArgs)(PLID, fmt, __VA_ARGS__)             // Simple vsprintf helper with rotating buffer
+#define GH_WRITEGHLOG(sev, fmt, ...)    (g_pluginfuncs->WriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__)  // Write to the GolfHook log with given severity
+#define GH_VARARGS(fmt, ...)            (g_pluginfuncs->VarArgs)(PLID, fmt, __VA_ARGS__)             // Simple vsprintf helper with rotating buffer
 
 /* Struct of vars for GolfHook plugins */
 typedef struct {
@@ -79,27 +81,27 @@ typedef struct {
     IL2CPP::IImage* IL2CPP_assembly;                    // IImage* to the Assembly-CSharp.dll image
 } plugin_vars;
 
-#define GH_MANAGER      (g_pluginvars.IL2CPP_manager)   // IManager* to the IL2CPP assembly manager
-#define GH_ASSEMBLY     (g_pluginvars.IL2CPP_assembly)  // IImage* to the Assembly-CSharp.dll image
+#define GH_MANAGER      (g_pluginvars->IL2CPP_manager)  // IManager* to the IL2CPP assembly manager
+#define GH_ASSEMBLY     (g_pluginvars->IL2CPP_assembly) // IImage* to the Assembly-CSharp.dll image
 
 /* Plugin use only */
 
-// Set '*plugininfo' to &g_plugininfo in GolfHook_Query (or just use GH_GIVE_PTRS())
+// Plugin's info struct to give to GolfHook (use GH_GIVE_PTRS() in GolfHook_Query)
 extern plugin_info g_plugininfo;
-// Set '*pluginfuncs` to &g_pluginfuncs in GolfHook_Query (or just use GH_GIVE_PTRS())
-extern plugin_funcs g_pluginfuncs;
-// Set '*pluginvars` to &g_pluginvars in GolfHook_Query (or just use GH_GIVE_PTRS())
-extern plugin_vars g_pluginvars;
+// Pointer to GolfHook's pluginfuncs object (use GH_GIVE_PTRS() in GolfHook_Query)
+extern plugin_funcs* g_pluginfuncs;
+// Pointer to GolfHook's pluginvars object (use GH_GIVE_PTRS() in GolfHook_Query)
+extern plugin_vars* g_pluginvars;
 
 // Pass pointers to GolfHook in GolfHook_Query
 #define GH_GIVE_PTRS() do { \
             *plugininfo = &g_plugininfo; \
-            *pluginfuncs = &g_pluginfuncs; \
-            *pluginvars = &g_pluginvars; \
+            g_pluginfuncs = pluginfuncs; \
+            g_pluginvars = pluginvars; \
         } while (0)
 
 /* Prototypes for entry points in the plugin */
-C_DLLEXPORT void GolfHook_Query(plugin_info** plugininfo, plugin_funcs** pluginfuncs, plugin_vars** pluginvars);
+C_DLLEXPORT void GolfHook_Query(plugin_info** plugininfo, plugin_funcs* pluginfuncs, plugin_vars* pluginvars);
 C_DLLEXPORT bool GolfHook_Attach();
 C_DLLEXPORT void GolfHook_Detach();
 

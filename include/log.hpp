@@ -9,6 +9,8 @@ Created By:
 
 */
 
+#pragma once
+
 #ifndef GOLFHOOK_LOG_HPP
 #define GOLFHOOK_LOG_HPP
 
@@ -40,7 +42,7 @@ enum {
 
 namespace Log {
 
-#ifdef _DEBUG
+#if defined(_DEBUG)
     // Initial severity for log file
     constexpr AixLog::Severity DEFAULT_SEVERITY = AixLog::Severity::debug;
     constexpr bool DEFAULT_APPEND = true;

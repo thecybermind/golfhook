@@ -9,6 +9,8 @@ Created By:
 
 */
 
+#pragma once
+
 #ifndef GOLFHOOK_PLUGIN_HPP
 #define GOLFHOOK_PLUGIN_HPP
 
@@ -20,7 +22,7 @@ Created By:
 // A GolfHook plugin
 struct Plugin {
     // GolfHook_Query signature
-    using plugin_query = void (*)(plugin_info** pinfo, plugin_funcs** pluginfuncs, plugin_vars** pluginvars);
+    using plugin_query = void (*)(plugin_info** pinfo, plugin_funcs* pluginfuncs, plugin_vars* pluginvars);
     // GolfHook_Attach signature
     using plugin_attach = bool (*)();
     // GolfHook_Detach signature
@@ -32,8 +34,6 @@ struct Plugin {
     plugin_attach GolfHook_Attach = nullptr;            // GolfHook_Attach function pointer
     plugin_detach GolfHook_Detach = nullptr;            // GolfHook_Detach function pointer
     plugin_info* plugininfo = nullptr;                  // Plugin-provided info
-    plugin_funcs* pluginfuncs = nullptr;                // Plugin-provided function structure
-    plugin_vars* pluginvars = nullptr;                  // Plugin-provided var structure
 
     Plugin();
     ~Plugin();
@@ -58,9 +58,9 @@ struct Plugin {
     void Unload();
 
     /**
-    * @brief Update a plugin's pluginvars
+    * @brief Update pluginvars
     */
-    void UpdateVars();
+    static void UpdateVars();
 };
 
 // List of GolfHook plugins

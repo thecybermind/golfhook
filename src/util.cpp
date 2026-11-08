@@ -10,9 +10,14 @@ Created By:
 */
 
 
-#define _CRT_SECURE_NO_WARNINGS 1
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#if defined(_WIN32)
+ #define _CRT_SECURE_NO_WARNINGS 1
+ #define WIN32_LEAN_AND_MEAN
+ #include <windows.h>
+#elif defined(__linux__)
+ #error Add linux headers
+#endif
+
 #include <cctype>
 #include <cstring>
 #include <cstddef>      // size_t
@@ -74,27 +79,50 @@ namespace Util {
 
 
     void* dll_load(const char* filename) {
+#if defined(_WIN32)
         return (void*)LoadLibraryA(filename);
+#elif defined(__linux__)
+        return dlopen(filename, RTLD_NOW);
+#endif
+    }
+
+
+    void* dll_handle(const char* filename) {
+#if defined(_WIN32)
+        return (void*)GetModuleHandleA(filename);
+#elif defined(__linux__)
+        return dlopen(filename, RTLD_NOLOAD);
+#endif
     }
 
 
     void* dll_symbol(void* dll, const char* symbol) {
         if (!dll || !symbol)
             return nullptr;
+#if defined(_WIN32)
         // symbol could technically be an ordinal and not a string, but the ordinal can't be 0
         // so a null check works. null dll handle seems to be a no-op.
         return (void*)GetProcAddress((HMODULE)dll, symbol);
+#elif defined(__linux__)
+        return dlsym(dll, symbol);
+#endif
     }
 
 
     bool dll_close(void* dll) {
         if (!dll)
             return false;
+#if defined(_WIN32      )
         return (bool)FreeLibrary((HMODULE)dll);
+#elif defined(__linux__)
+        // dlclose returns 0 on success, non-zero otherwise
+        return !dlclose(dll);
+#endif
     }
 
 
     const char* dll_error() {
+#if defined(_WIN32)
         // this will return the last error from any win32 function, not just library functions
         static std::string str;
         char* buf = nullptr;
@@ -114,7 +142,11 @@ namespace Util {
         LocalFree(buf); // no-op to pass NULL
 
         return str.c_str();
+#elif defined(__linux__)
+        return dlerror();
+#endif
     }
+
 
 
     std::string str_tolower(std::string str) {

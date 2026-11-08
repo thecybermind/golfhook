@@ -9,6 +9,8 @@ Created By:
 
 */
 
+#pragma once
+
 #ifndef GOLFHOOK_VHOOK_HPP
 #define GOLFHOOK_VHOOK_HPP
 

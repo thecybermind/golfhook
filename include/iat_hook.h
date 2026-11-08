@@ -9,12 +9,11 @@ Created By:
 
 */
 
+#pragma once
+
 #ifndef GOLFHOOK_HOOK_H
 #define GOLFHOOK_HOOK_H
 
-#define WIN32_LEAN_AND_MEAN
-#include <windef.h>
-
-FARPROC install_IAT_hook(HMODULE target_module, const char* dll_name, const char* function_name, FARPROC function_hook);
+void* install_IAT_hook(void* target_module, const char* dll_name, const char* function_name, void* function_hook);
 
 #endif // GOLFHOOK_HOOK_H

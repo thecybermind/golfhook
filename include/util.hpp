@@ -9,6 +9,7 @@ Created By:
 
 */
 
+#pragma once
 
 #ifndef GOLFHOOK_UTIL_HPP
 #define GOLFHOOK_UTIL_HPP
@@ -93,6 +94,16 @@ namespace Util {
     * @return handle for loaded module
     */
     void* dll_load(const char* filename);
+
+    /**
+    * @brief Get the handle for a loaded DLL.
+    *
+    * This calls GetModuleHandleA in Windows, and dlopen(RTLD_NOLOAD) in linux.
+    *
+    * @param filename Path to DLL
+    * @return handle for loaded module
+    */
+    void* dll_handle(const char* filename);
 
     /**
     * @brief Get a named function/variable from a given DLL.

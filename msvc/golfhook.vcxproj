@@ -13,7 +13,8 @@
   <ItemGroup>
     <ClCompile Include="..\src\config.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
-    <ClCompile Include="..\src\iat_hook.cpp" />
+    <ClCompile Include="..\src\iat_hook_linux.cpp" />
+    <ClCompile Include="..\src\iat_hook_win32.cpp" />
     <ClCompile Include="..\src\il2cpp.cpp" />
     <ClCompile Include="..\src\log.cpp" />
     <ClCompile Include="..\src\main.cpp" />
