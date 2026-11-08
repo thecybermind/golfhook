@@ -23,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\config.hpp" />
-    <ClInclude Include="..\include\dllmain.h" />
     <ClInclude Include="..\include\format.hpp" />
     <ClInclude Include="..\include\ghapi.hpp" />
     <ClInclude Include="..\include\hook_iat.h" />

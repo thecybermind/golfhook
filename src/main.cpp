@@ -21,8 +21,9 @@ Created By:
 
 
 namespace GolfHook {
+    void* hModule = nullptr;
     IL2CPP::Manager Manager;
-    IL2CPP::IImage* Assembly;
+    IL2CPP::IImage* Assembly = nullptr;
 
     std::map<void*, void*> hook_map_proc;
     std::map<std::string, void*> hook_map_name;

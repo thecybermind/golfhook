@@ -22,11 +22,13 @@ Created By:
 #include "il2cpp.hpp"
 
 namespace GolfHook {
-    extern IL2CPP::Manager Manager;
-    extern IL2CPP::IImage* Assembly;
+    extern void* hModule;                               // GolfHook's DLL handle
 
-    extern std::map<void*, void*> hook_map_proc;
-    extern std::map<std::string, void*> hook_map_name;
+    extern IL2CPP::Manager Manager;                     // IL2CPP Manager (loads Assemblies)
+    extern IL2CPP::IImage* Assembly;                    // Assembly-CSharp.dll assembly
+
+    extern std::map<void*, void*> hook_map_proc;        // Map of hook procedure -> original procedure
+    extern std::map<std::string, void*> hook_map_name;  // Map of original procedure name -> original procedure
 
     int64_t il2cpp_init_hook(const char* domain);
     void il2cpp_shutdown_hook();

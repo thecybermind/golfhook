@@ -17,7 +17,6 @@ Created By:
 #include <filesystem>
 
 #include "ghapi.hpp"
-#include "format.hpp"
 #include "log.hpp"
 #include "config.hpp"
 #include "main.hpp"     // GolfHook namespace
