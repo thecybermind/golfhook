@@ -82,6 +82,8 @@ namespace GolfHook {
         }
         GHLOG(GH_LOG_NOTICE, GH_TAG) << g_plugins.size() << " plugin(s) loaded.\n";
 
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook initialization complete.\n";
+
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_init_hook(\"" << domain << "\") returning " << ret << ".\n";
 
         return ret;
@@ -107,6 +109,8 @@ namespace GolfHook {
         }
         g_plugins.clear();
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "Plugins unloaded.\n";
+
+        GHLOG(GH_LOG_NOTICE, GH_TAG) << "GolfHook shutting down.\n";
 
         GHLOG(GH_LOG_TRACE, GH_TAG) << "il2cpp_shutdown_hook() returning.\n";
     }
