@@ -111,17 +111,13 @@ C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLi
         Log::log_set_severity(Log::log_severity_from_name(cfg_loglevel));
 
     // load original UnityPlayer.dll
-    static void* hUnityPlayer = Util::dll_load("UnityPlayer_orig.dll");
-    static decltype(&UnityMain) UnityMain_orig = nullptr;
-
+    void* hUnityPlayer = Util::dll_load("UnityPlayer_orig.dll");
     if (!hUnityPlayer) {
         GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load UnityPlayer_orig.dll! Shutting down.\n";
         return -1;
     }
 
-    if (!UnityMain_orig)
-        UnityMain_orig = (decltype(UnityMain_orig))Util::dll_symbol(hUnityPlayer, "UnityMain");
-
+    decltype(&UnityMain) UnityMain_orig = (decltype(UnityMain_orig))Util::dll_symbol(hUnityPlayer, "UnityMain");
     if (!UnityMain_orig) {
         GHLOG(GH_LOG_FATAL, GH_TAG) << "Unable to load UnityMain from UnityPlayer_orig.dll! Shutting down.\n";
         return -1;
@@ -133,6 +129,6 @@ C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLi
         return -1;
     }
 
-    // this function doesn't seem to return at all
+    // this function doesn't seem to return at all, so this is goodbye!
     return UnityMain_orig(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 }
