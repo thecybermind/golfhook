@@ -757,6 +757,11 @@ namespace IL2CPP {
 
 
     Manager::~Manager() {
+        Cleanup();
+    }
+
+    void Manager::Cleanup() {
+        // the IImage*s inside this vector will be deleted by the Image::Cleanup() function
         m_images.clear();
     }
 

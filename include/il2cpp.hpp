@@ -117,6 +117,7 @@ namespace IL2CPP {
             Manager();
             ~Manager();
 
+            void Cleanup();
             void InitAssemblies();
 
             virtual IImage* get_image(const char* name) const;

@@ -101,6 +101,7 @@ namespace GolfHook {
 
         GHLOG(GH_LOG_INFO, GH_TAG) << "Shutting down IL2CPP.\n";
         IL2CPP::shutdown();
+        Manager.Cleanup();
 
         // unload plugins
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "Unloading plugins...\n";
