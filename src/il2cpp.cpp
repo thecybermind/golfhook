@@ -39,11 +39,11 @@ Created By:
 TODO: maybe switch the classes to the same as other libraries where they are just a type on top of the IL2CPP pointer.
 And have a separate virtual interface for interacting with these objects?
 */
-#define IL2CPP_API( name, ret_type, args )         \
-  ret_type (* name) args = nullptr;
 
-#define IL2CPP_GET_ADDR( name, IL2CPP_export, handle ) \
-  name = (decltype(name))Util::dll_symbol( handle, IL2CPP_export );
+// Declare a function pointer named 'name' with signature 'ret_type(args)'
+#define IL2CPP_API( name, ret_type, args )          ret_type (*name) args = nullptr
+// Assign the function address of 'func_name' in module 'handle' to the function pointer named 'name'
+#define IL2CPP_GET_ADDR( name, func_name, handle )  name = (decltype(name))Util::dll_symbol(handle, func_name)
 
 
 namespace IL2CPP {
