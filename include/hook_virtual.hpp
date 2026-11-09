@@ -57,7 +57,7 @@ class VHook {
         VHook() : self(nullptr), vtable_orig(nullptr) {
         }
 
-        ~VHook() {
+        virtual ~VHook() {
             vtable_copy.clear();
             // restore original vtable pointer to object
             if (vtable_orig)
