@@ -14,9 +14,6 @@ Created By:
 #ifndef GOLFHOOK_GHAPI_HPP
 #define GOLFHOOK_GHAPI_HPP
 
-#include "il2cpp.hpp"       // IManager and IImage in plugin_vars
-#include "hook_virtual.hpp" // VHook in plugin_funcs
-
 // plugins and internal use
 #if defined(_WIN32)
  #define DLLEXPORT __declspec(dllexport)
@@ -68,6 +65,7 @@ enum {
 };
 
 /* Prototype struct for GolfHook plugin utility functions */
+class VHook;
 struct plugin_funcs {
     virtual void WriteGHLog(plugin_id plid, int severity, const char* fmt, ...) = 0;    // Write to the GolfHook log with given severity
     virtual const char* VarArgs(plugin_id plid, const char* fmt, ...) = 0;              // Simple vsprintf helper with rotating buffer
@@ -80,14 +78,21 @@ struct plugin_funcs {
 #define GH_WRITEGHLOG(sev, fmt, ...)        (g_pluginfuncs->WriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__) // Write to the GolfHook log with given severity
 #define GH_VARARGS(fmt, ...)                (g_pluginfuncs->VarArgs)(PLID, fmt, __VA_ARGS__)            // Simple vsprintf helper with rotating buffer
 #define GH_HOOKIAT(target, dll, func, hook) (g_pluginfuncs->HookIAT)(PLID, target, dll, func, hook)     // Hook IAT/PLT tables for a given function in a target module
-#define GH_HOOKVIRTUAL_NEW()                    (g_pluginfuncs->HookVirtual_New)(PLID)                  // Return a pointer to a VHook object to hook a virtual function
+#define GH_HOOKVIRTUAL_NEW()                (g_pluginfuncs->HookVirtual_New)(PLID)                      // Return a pointer to a VHook object to hook a virtual function
 #define GH_HOOKVIRTUAL_FREE(vhook)          (g_pluginfuncs->HookVirtual_Free)(PLID, vhook)              // Frees a VHook object returned by GH_HOOKVIRTUAL
 
+namespace IL2CPP {
+    struct Manager;
+    struct Image;
+    struct DLLFunctions;
+}
+
 /* Struct of vars for GolfHook plugins */
-typedef struct {
-    IL2CPP::IManager* IL2CPP_manager;                   // IManager* to the IL2CPP assembly manager
-    IL2CPP::IImage* IL2CPP_assembly;                    // IImage* to the Assembly-CSharp.dll image
-} plugin_vars;
+struct plugin_vars {
+    const IL2CPP::Manager* IL2CPP_manager;              // Manager* to the IL2CPP assembly manager
+    const IL2CPP::Image* IL2CPP_assembly;               // Image* to the Assembly-CSharp.dll image
+    const IL2CPP::DLLFunctions* IL2CPP_dll;             // Pointer to struct containing exported IL2CPP DLL functions
+};
 
 #define GH_MANAGER      (g_pluginvars->IL2CPP_manager)  // IManager* to the IL2CPP assembly manager
 #define GH_ASSEMBLY     (g_pluginvars->IL2CPP_assembly) // IImage* to the Assembly-CSharp.dll image
@@ -108,9 +113,13 @@ extern plugin_vars* g_pluginvars;
             g_pluginvars = pluginvars; \
         } while (0)
 
+
 /* Prototypes for entry points in the plugin */
 C_DLLEXPORT void GolfHook_Query(plugin_info** plugininfo, plugin_funcs* pluginfuncs, plugin_vars* pluginvars);
 C_DLLEXPORT bool GolfHook_Attach();
 C_DLLEXPORT void GolfHook_Detach();
+
+#include "hook_virtual.hpp" // VHook in plugin_funcs
+#include "il2cpp.hpp"       // Manager and Image in plugin_vars
 
 #endif // GOLFHOOK_GHAPI_HPP

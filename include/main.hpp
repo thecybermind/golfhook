@@ -19,13 +19,15 @@ Created By:
 #include <memory>
 
 #include "hook_iat.h"
+#define IL2CPP_INTERNAL     // use internal location of DLL pointer struct
 #include "il2cpp.hpp"
+#undef IL2CPP_INTERNAL
 
 namespace GolfHook {
     extern void* hModule;                               // GolfHook's DLL handle
 
-    extern IL2CPP::Manager Manager;                     // IL2CPP Manager (loads Assemblies)
-    extern IL2CPP::IImage* Assembly;                    // Assembly-CSharp.dll assembly
+    extern const IL2CPP::Manager Manager;               // IL2CPP Manager (loads Assemblies)
+    extern const IL2CPP::Image* Assembly;               // Assembly-CSharp.dll assembly
 
     extern std::map<void*, void*> hook_map_proc;        // Map of hook procedure -> original procedure
     extern std::map<std::string, void*> hook_map_name;  // Map of original procedure name -> original procedure

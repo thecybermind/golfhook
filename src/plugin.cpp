@@ -43,6 +43,7 @@ static plugin_funcs* s_plugin_funcs = &s_plugin_funcs_impl;
 plugin_vars s_plugin_vars = {
     &GolfHook::Manager, // IL2CPP_manager
     nullptr,            // IL2CPP_assembly
+    &IL2CPP::dll,       // IL2CPP_dll
 };
 
 

@@ -9,122 +9,25 @@ Created By:
 
 */
 
-/* The idea for this came from Aetherim and the IL2CPP Reverse Engineering Guide:
- * - https://github.com/Toxocious/Aetherim/
- * - https://github.com/jadis0x/il2cpp-reverse-engineering-guide
- *
- * I made this a virtual interface scheme so that plugins don't need [separate] implementations of the IL2CPP stuff.
- * Each object captures the actual pointer coming from the IL2CPP functions, and also stores "this" in a static
- * vector for deleting during shutdown.
- *
- * The general way other libraries do it is just cast the pointers from IL2CPP into the desired types, but this
- * requires each module to have its own knowledge of the internal implementation (including DLL export pointers)
- * which does not work well across plugin boundaries.
- *
- * Also the Aetherim Image class references the first member of the IL2CPP object directly as a const char* name
- * that is never set. Since we have separate objects now, we must call il2cpp_image_get_name to get the name.
- */
-
 #pragma once
 
 #ifndef GOLFHOOK_IL2CPP_HPP
 #define GOLFHOOK_IL2CPP_HPP
 
 #include <cstdint>
+#include <cstring>
 #include <vector>
 
-namespace IL2CPP {
-    // Initialize IL2CPP pointers
-    bool initialize();
+ // Declare a function pointer named 'name' with signature 'ret_type(args)'
+#define IL2CPP_API( name, ret_type, args )          ret_type (*name) args;
+// Assign the function address of 'func_name' in module 'handle' to the function pointer named 'name'
+#define IL2CPP_GET_ADDR( name, func_name, handle )  dll. name = (decltype(dll. name))Util::dll_symbol(handle, func_name)
 
-    // Clean up internal IL2CPP resources
-    void shutdown();
-
-    class IMethod {
-        public:
-            virtual void* invoke_static(void** params = nullptr) const = 0;
-            virtual const void* invoke(void* obj, void** params = nullptr) = 0;
-            virtual uint32_t get_param_count() const = 0;
-            virtual const char* get_param_name(int index) const = 0;
-            virtual const char* get_param_type(int index) const = 0;
-            virtual bool is_generic() const = 0;
-            virtual bool is_inflated() const = 0;
-            virtual bool is_instance() const = 0;
-            virtual const char* get_name() = 0;
-            virtual const char* get_name() const = 0;
-            virtual ~IMethod() {};
-    };
-
-    class IType;
-    class IField {
-        public:
-            virtual void* get_static_value() const = 0;
-            virtual void* set_static_value(void* value) const = 0;
-            virtual size_t get_offset() const = 0;
-            virtual void* get_object(const void* obj) const = 0;
-            virtual IType* get_type() const = 0;
-            virtual const char* get_attribute() const = 0;
-            virtual const char* get_name() = 0;
-            virtual const char* get_name() const = 0;
-            virtual ~IField() {};
-    };
-
-    class IClass {
-        public:
-            virtual IMethod* get_method(const char* name, int argc = 0) const = 0;
-            virtual IField* get_field(const char* name) const = 0;
-            virtual std::vector<IField*> get_fields() = 0;
-            virtual size_t get_field_count() const = 0;
-            virtual IClass* get_nested_class(const char* name) const = 0;
-            virtual const char* get_name() = 0;
-            virtual const char* get_name() const = 0;
-            virtual ~IClass() {};
-    };
-
-    class IType {
-        public:
-            virtual IClass* get_class() const = 0;
-            virtual void* get_object() const = 0;
-            virtual int get_type() const = 0;
-            virtual uint32_t get_attributes() const = 0;
-            virtual bool compare_type(IType* type) = 0;
-            virtual bool is_by_ref() const = 0;
-            virtual const char* get_name() = 0;
-            virtual const char* get_name() const = 0;
-            virtual ~IType() {};
-    };
-
-    class IImage {
-        public:
-            virtual IClass* get_class(const char* name, const char* name_space = "") const = 0;
-            virtual std::vector<IClass*> get_classes() = 0;
-            virtual size_t get_class_count() const = 0;
-            virtual const char* get_name() const = 0;
-            virtual ~IImage() {};
-    };
-
-    class IManager {
-        public:
-            virtual IImage* get_image(const char* name) const = 0;
-            virtual std::vector<IImage*>& get_images() = 0;
-            virtual bool is_debugger_attached() const = 0;
-    };
-
-    class Manager : public IManager {
-        private:
-            std::vector<IImage*> m_images;
-        public:
-            Manager();
-            ~Manager();
-
-            void Cleanup();
-            void InitAssemblies();
-
-            virtual IImage* get_image(const char* name) const;
-            virtual std::vector<IImage*>& get_images();
-            virtual bool is_debugger_attached() const;
-    };
-} // namespace IL2CPP
+#if defined(IL2CPP_INTERNAL)
+ #define DLL_FUNCS (IL2CPP::dll)
+#else
+ #define DLL_FUNCS (*(g_pluginvars->IL2CPP_dll))
+#endif
 
 #define FIELD_ATTRIBUTE_FIELD_ACCESS_MASK   0x0007
 #define FIELD_ATTRIBUTE_COMPILER_CONTROLLED 0x0000
@@ -134,7 +37,7 @@ namespace IL2CPP {
 #define FIELD_ATTRIBUTE_FAMILY              0x0004
 #define FIELD_ATTRIBUTE_FAM_OR_ASSEM        0x0005
 #define FIELD_ATTRIBUTE_PUBLIC              0x0006
-    
+
 #define FIELD_ATTRIBUTE_STATIC              0x0010
 #define FIELD_ATTRIBUTE_INIT_ONLY           0x0020
 #define FIELD_ATTRIBUTE_LITERAL             0x0040
@@ -261,5 +164,467 @@ namespace IL2CPP {
 #define ASSEMBLYREF_RETARGETABLE_FLAG                0x00000100
 #define ASSEMBLYREF_ENABLEJITCOMPILE_TRACKING_FLAG   0x00008000
 #define ASSEMBLYREF_DISABLEJITCOMPILE_OPTIMIZER_FLAG 0x00004000
+
+
+namespace IL2CPP {
+    struct Method;
+    struct Field;
+    struct Class;
+    struct Type;
+    struct Image;
+
+    // Initialize IL2CPP pointers
+    bool initialize();
+
+    // Clean up internal IL2CPP resources
+    void shutdown();
+
+    struct DLLFunctions {
+        // debugger
+        IL2CPP_API(is_debugger_attached, bool, (void));
+
+        // internal calls and runtime
+        IL2CPP_API(add_internal_call, void, (const char* name, const Method* self_ptr));
+        IL2CPP_API(resolve_icall, void, (const char* name));
+        IL2CPP_API(runtime_class_init, void, (void* _class));
+        IL2CPP_API(runtime_object_init, void, (void* obj));
+
+        // thread, domain, and assembly
+        IL2CPP_API(thread_attach, const void*, (const void* domain));
+        IL2CPP_API(thread_detach, void, (const void* thread));
+        IL2CPP_API(domain_get, const void*, (void));
+        IL2CPP_API(domain_get_assemblies, const void**, (const void* domain, size_t* count));
+
+        // images
+        IL2CPP_API(assembly_get_image, const Image*, (const void* assembly));
+        IL2CPP_API(image_get_name, const char*, (const Image* self));
+        IL2CPP_API(image_get_class_count, size_t, (const Image* self));
+        IL2CPP_API(image_get_class, const Class*, (const Image* self, size_t index));
+
+        // objects
+        IL2CPP_API(object_new, void*, (void* domain, const Class* _class));
+        IL2CPP_API(object_unbox, void*, (void* obj));
+        IL2CPP_API(object_box, void*, (const Class* _class, void* data));
+        IL2CPP_API(object_get_size, uint32_t, (void* obj));
+        IL2CPP_API(object_get_class, void*, (void* obj));
+        IL2CPP_API(object_get_virtual_method, void*, (void* obj, void* method));
+
+        // arrays
+        IL2CPP_API(array_element_size, int, (const void* array_class));
+        IL2CPP_API(array_class_get, void*, (const void* element_class, uint32_t rank));
+        IL2CPP_API(get_array_length, uint32_t, (const void* array));
+        IL2CPP_API(array_new, void*, (void* element_type_infof, size_t length));
+
+        // class
+        IL2CPP_API(class_from_name, const Class*, (const Image* image, const char* _namespace, const char* name));
+        IL2CPP_API(class_get_name, const char*, (const Class* self));
+        IL2CPP_API(class_get_namespace, const char*, (const Class* self));
+        IL2CPP_API(class_enum_basetype, void*, (const Class* self));
+        IL2CPP_API(class_is_generic, bool, (const Class* self));
+        IL2CPP_API(class_is_inflated, bool, (const Class* self));
+        IL2CPP_API(class_has_parent, bool, (const Class* self, const void* class_c));
+        IL2CPP_API(class_get_parent, void*, (const Class* self));
+        IL2CPP_API(class_is_subclass_of, bool, (const Class* self, const void* parent__class, bool check_interfaces));
+        IL2CPP_API(class_from_il2cpp_type, void*, (const Type* self));
+        IL2CPP_API(class_get_events, void*, (const Class* self, void* iter));
+        IL2CPP_API(class_get_interfaces, void*, (const Class* self, void* iter));
+        IL2CPP_API(class_get_properties, void*, (const Class* self, void* iter));
+        IL2CPP_API(class_property_from_name, void*, (const Class* self, const char* name));
+
+        // types
+        IL2CPP_API(class_get_nested_types, const Class*, (const Class* self, void* iter));
+        IL2CPP_API(type_get_attrs, uint32_t, (const Type* self));
+        IL2CPP_API(type_get_class_or_element_class, const Class*, (const Type* self));
+        IL2CPP_API(type_get_name, const char*, (const Type* self));
+        IL2CPP_API(type_get_object, void*, (const Type* self));
+        IL2CPP_API(type_get_type, int, (const Type* self));
+        IL2CPP_API(type_equals, bool, (const Type* type_1, const Type* type_2));
+        IL2CPP_API(type_is_byref, bool, (const Type* self));
+
+        // methods
+        IL2CPP_API(runtime_invoke, void*, (const Method* self, void* obj, void** params, void** excption));
+        IL2CPP_API(class_get_method_from_name, const Method*, (const Class* self, const char* name, int params));
+        IL2CPP_API(class_get_methods, void*, (const Class* self, void* iter));
+        IL2CPP_API(method_get_name, const char*, (const Method* self));
+        IL2CPP_API(method_is_generic, bool, (const Method* self));
+        IL2CPP_API(method_is_inflated, bool, (const Method* self));
+        IL2CPP_API(method_is_instance, bool, (const Method* self));
+        IL2CPP_API(method_get_param_count, int, (const Method* self));
+        IL2CPP_API(method_get_param_name, const char*, (const Method* self, int index));
+        IL2CPP_API(method_get_param_type, const char*, (const Method* self, int index));
+        IL2CPP_API(method_get_return_type, void*, (const Method* self));
+
+        // fields
+        IL2CPP_API(class_get_fields, const Field*, (const Class* self, void* iter));
+        IL2CPP_API(class_get_field_from_name, const Field*, (const Class* self, const char* name));
+        IL2CPP_API(field_get_offset, size_t, (const Field* field));
+        IL2CPP_API(class_num_fields, size_t, (const Class* self));
+        IL2CPP_API(field_get_name, const char*, (const Field* field));
+        IL2CPP_API(field_get_value, void, (const void* obj, const Field* field, void* value));
+        IL2CPP_API(field_set_value, void, (void* obj, const Field* field, const void* value));
+        IL2CPP_API(field_get_value_object, void*, (const Field* field, const void* obj));
+        IL2CPP_API(field_set_value_object, void, (const Field* field, void* obj, const void* value));
+        IL2CPP_API(field_get_type, Type*, (const Field* field));
+        IL2CPP_API(field_static_get_value, void*, (const Field* field, void* output));
+        IL2CPP_API(field_static_set_value, void*, (const Field* field, void* value));
+        IL2CPP_API(field_get_flags, int, (const Field* field));
+
+        // strings
+        IL2CPP_API(string_chars, wchar_t*, (void* string_obj));
+        IL2CPP_API(string_new, const char*, (void* domain, const char* text));
+    };
+
+    // struct to hold all the IL2CPP function pointers (for accessibility from plugins)
+    extern DLLFunctions dll;
+
+
+    struct Method {
+        void* invoke_static(void** params = nullptr, void** exception = nullptr) const {
+            if (!DLL_FUNCS.runtime_invoke)
+                return nullptr;
+
+            void* exc = nullptr;
+
+            const auto result = DLL_FUNCS.runtime_invoke(this, nullptr, params, &exc);
+
+            if (exception)
+                *exception = exc;
+
+            return result;
+        }
+
+        const void* invoke(void* obj, void** params = nullptr, void** exception = nullptr) const {
+            if (!DLL_FUNCS.runtime_invoke)
+                return nullptr;
+
+            void* exc = nullptr;
+
+            const auto result = DLL_FUNCS.runtime_invoke(this, obj, params, &exc);
+
+            if (exception)
+                *exception = exc;
+
+            return result;
+        }
+
+        uint32_t get_param_count() const {
+            if (!DLL_FUNCS.method_get_param_count)
+                return 0;
+
+            return DLL_FUNCS.method_get_param_count(this);
+        }
+
+        const char* get_param_name(int index) const {
+            if (!DLL_FUNCS.method_get_param_name)
+                return nullptr;
+
+            return DLL_FUNCS.method_get_param_name(this, index);
+        }
+
+        const char* get_param_type(int index) const {
+            if (!DLL_FUNCS.method_get_param_type)
+                return nullptr;
+
+            return DLL_FUNCS.method_get_param_type(this, index);
+        }
+
+        bool is_generic() const {
+            if (!DLL_FUNCS.method_is_generic)
+                return false;
+
+            return DLL_FUNCS.method_is_generic(this);
+        }
+
+        bool is_inflated() const {
+            if (!DLL_FUNCS.method_is_inflated)
+                return false;
+
+            return DLL_FUNCS.method_is_inflated(this);
+        }
+
+        bool is_instance() const {
+            if (!DLL_FUNCS.method_is_instance)
+                return false;
+
+            return DLL_FUNCS.method_is_instance(this);
+        }
+
+        const char* get_name() const {
+            if (!DLL_FUNCS.method_get_name)
+                return nullptr;
+
+            return DLL_FUNCS.method_get_name(this);
+        }
+    };  // struct Method
+
+
+    struct Field {
+        void* get_static_value() const {
+            if (!DLL_FUNCS.field_static_get_value)
+                return nullptr;
+
+            void* val = nullptr;
+
+            DLL_FUNCS.field_static_get_value(this, &val);
+
+            return val;
+        }
+
+        void* set_static_value(void* value) const {
+            if (!DLL_FUNCS.field_static_set_value)
+                return nullptr;
+
+            return DLL_FUNCS.field_static_set_value(this, value);
+        }
+
+        size_t get_offset() const {
+            if (!DLL_FUNCS.field_get_offset)
+                return 0x0;
+
+            return DLL_FUNCS.field_get_offset(this);
+        }
+
+        void* get_object(const void* self) const {
+            if (!DLL_FUNCS.field_get_value_object)
+                return nullptr;
+
+            return DLL_FUNCS.field_get_value_object(this, self);
+        }
+
+        Type* get_type() const {
+            if (!DLL_FUNCS.field_get_type)
+                return nullptr;
+
+            return DLL_FUNCS.field_get_type(this);
+        }
+
+        const char* get_name() const {
+            if (!DLL_FUNCS.field_get_name)
+                return nullptr;
+
+            return DLL_FUNCS.field_get_name(this);
+        }
+    };  // struct Field
+
+
+    struct Class {
+        const Method* get_method(const char* name, int argc = 0) const {
+            if (!DLL_FUNCS.class_get_method_from_name)
+                return nullptr;
+
+             return DLL_FUNCS.class_get_method_from_name(this, name, argc);
+        }
+
+        const Field* get_field(const char* name) const {
+            if (!DLL_FUNCS.class_get_field_from_name)
+                return nullptr;
+
+            return DLL_FUNCS.class_get_field_from_name(this, name);
+        }
+
+        std::vector<const Field*> get_fields() const {
+            std::vector<const Field*> fields = {};
+
+            if (!DLL_FUNCS.class_num_fields || !DLL_FUNCS.class_get_fields)
+                return fields;
+
+            const size_t count = DLL_FUNCS.class_num_fields(this);
+            if (count) {
+                fields.reserve(count);
+
+                void* iter = nullptr;
+                const Field* field = nullptr;
+
+                while ((field = DLL_FUNCS.class_get_fields(this, &iter))) {
+                    fields.push_back(field);
+                }
+            }
+
+            return fields;
+        }
+
+        size_t get_field_count() const {
+            if (!DLL_FUNCS.class_num_fields)
+                return 0;
+
+            return DLL_FUNCS.class_num_fields(this);
+        }
+
+        const Class* get_nested_class(const char* name) const {
+            if (!DLL_FUNCS.class_get_nested_types || !DLL_FUNCS.class_get_name)
+                return nullptr;
+
+            void* iter = nullptr;
+            const Class* type = nullptr;
+
+            while ((type = DLL_FUNCS.class_get_nested_types(this, &iter))) {
+                const auto class_name = DLL_FUNCS.class_get_name(type);
+
+                if (strcmp(class_name, name) == 0)
+                    return type;
+            }
+
+            return nullptr;
+        }
+
+        const char* get_name() const {
+            if (!DLL_FUNCS.class_get_name)
+                return nullptr;
+
+            return DLL_FUNCS.class_get_name(this);
+        }
+    };  // struct Class
+
+
+    struct Type {
+        const Class* get_class() const {
+            if (!DLL_FUNCS.type_get_class_or_element_class)
+                return nullptr;
+
+            return DLL_FUNCS.type_get_class_or_element_class(this);
+        }
+
+        void* get_object() const {
+            if (!DLL_FUNCS.type_get_object)
+                return nullptr;
+
+            return DLL_FUNCS.type_get_object(this);
+        }
+
+        int get_type() const {
+            if (!DLL_FUNCS.type_get_type)
+                return -1;
+
+            return DLL_FUNCS.type_get_type(this);
+        }
+
+        uint32_t get_attributes() const {
+            if (!DLL_FUNCS.type_get_attrs)
+                return 0;
+
+            return DLL_FUNCS.type_get_attrs(this);
+        }
+
+        bool compare_type(Type* other) const {
+            if (!DLL_FUNCS.type_equals)
+                return false;
+
+            return DLL_FUNCS.type_equals(this, other);
+        }
+
+        bool is_by_ref() const {
+            if (!DLL_FUNCS.type_is_byref)
+                return false;
+
+            return DLL_FUNCS.type_is_byref(this);
+        }
+
+        const char* get_name() const {
+            if (!DLL_FUNCS.type_get_name)
+                return nullptr;
+
+            return DLL_FUNCS.type_get_name(this);
+        }
+    };  // struct Type
+
+
+    struct Image {
+    private:
+        const char* m_name; // this exists in the IL2CPP object
+    public:
+        const Class* get_class(const char* name, const char* name_space = "") const {
+            if (!DLL_FUNCS.class_from_name)
+                return nullptr;
+
+            return DLL_FUNCS.class_from_name(this, name_space, name);
+        }
+
+        size_t get_class_count() const {
+            if (!DLL_FUNCS.image_get_class_count)
+                return 0;
+
+            return DLL_FUNCS.image_get_class_count(this);
+        }
+
+        std::vector<const Class*> get_classes() const {
+            std::vector<const Class*> classes = {};
+
+            if (!DLL_FUNCS.image_get_class_count || !DLL_FUNCS.image_get_class || !DLL_FUNCS.class_get_name)
+                return classes;
+
+            size_t count = DLL_FUNCS.image_get_class_count(this);
+            if (count) {
+                classes.reserve(count);
+
+                for (size_t index = 0U; index < count; ++index) {
+                    const Class* address = DLL_FUNCS.image_get_class(this, index);
+                    if (!address)
+                        continue;
+
+                    const char* name = DLL_FUNCS.class_get_name(address);
+                    if (!name || !strcmp(name, "<Module>"))
+                        continue;
+
+                    classes.push_back(address);
+                }
+            }
+
+            return classes;
+        }
+
+        const char* get_name() const {
+            if (m_name)
+                return m_name;
+
+            if (!DLL_FUNCS.image_get_name)
+                return nullptr;
+
+
+            return DLL_FUNCS.image_get_name(this);
+        }
+    };  // struct Image
+
+
+    struct Manager {
+        std::vector<const Image*> get_images() const {
+            std::vector<const Image*> images = {};
+
+            if (!DLL_FUNCS.domain_get || !DLL_FUNCS.domain_get_assemblies || !DLL_FUNCS.assembly_get_image)
+                return images;
+
+            size_t count = 0U;
+
+            const auto assemblies = DLL_FUNCS.domain_get_assemblies(DLL_FUNCS.domain_get(), &count);
+
+            if (count && assemblies && *assemblies) {
+                images.reserve(count);
+
+                for (size_t index = 0U; index < count; ++index) {
+                    auto image = DLL_FUNCS.assembly_get_image(assemblies[index]);
+                    if (image)
+                        images.push_back(image);
+                }
+            }
+
+            return images;
+        }
+
+        const Image* get_image(const char* name) const {
+            std::vector<const Image*> images = get_images();
+
+            for (const auto image : images) {
+                if (!strcmp(name, image->get_name()))
+                    return image;
+            }
+
+            return nullptr;
+        }
+
+        bool is_debugger_attached() const {
+            return DLL_FUNCS.is_debugger_attached();
+        }
+    };  // struct Manager
+
+} // namespace IL2CPP
 
 #endif // GOLFHOOK_IL2CPP_HPP

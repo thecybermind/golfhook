@@ -19,8 +19,8 @@ SRC_CXX := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ_FILES := $(SRC_CXX:$(SRC_DIR)/%.cpp=%.o) $(SRC_C:$(SRC_DIR)/%.c=%.o)
 
 CPPFLAGS := -MMD -MP -I ./include
-CFLAGS   := -Wall -Werror -pipe -fPIC -std=gnu17
-CXXFLAGS := -Wall -Werror -pipe -fPIC -std=c++17
+CFLAGS   := -Wall -Werror -pipe -fPIC -fvisibility=hidden -std=gnu17
+CXXFLAGS := -Wall -Werror -pipe -fPIC -fvisibility=hidden -std=c++17
 LDFLAGS  := -shared -fPIC
 LDLIBS   :=
 

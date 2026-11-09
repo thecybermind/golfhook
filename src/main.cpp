@@ -13,7 +13,9 @@ Created By:
 #include <map>
 #include <memory>
 
+#define IL2CPP_INTERNAL     // use internal location of DLL pointer struct
 #include "il2cpp.hpp"
+#undef IL2CPP_INTERNAL
 #include "log.hpp"
 #include "main.hpp"
 #include "plugin.hpp"
@@ -22,8 +24,9 @@ Created By:
 
 namespace GolfHook {
     void* hModule = nullptr;
-    IL2CPP::Manager Manager;
-    IL2CPP::IImage* Assembly = nullptr;
+
+    const IL2CPP::Manager Manager;
+    const IL2CPP::Image* Assembly = nullptr;
 
     std::map<void*, void*> hook_map_proc;
     std::map<std::string, void*> hook_map_name;
@@ -41,7 +44,6 @@ namespace GolfHook {
         // at this point, the Unity engine has initialized IL2CPP, so begin looking inside
         GHLOG(GH_LOG_INFO, GH_TAG) << "Initializing IL2CPP.\n";
         IL2CPP::initialize();
-        Manager.InitAssemblies();
 
         // output some debug info about the IL2CPP environment
         GHLOG(GH_LOG_DEBUG, GH_TAG) << "IL2CPP debugger attached: " << (Manager.is_debugger_attached() ? "true" : "false") << "\n";
@@ -59,12 +61,11 @@ namespace GolfHook {
         }
 
         // output some debug info about the assembly
-        GHLOG(GH_LOG_DEBUG, GH_TAG) << "Assembly class count: " << Assembly->get_classes().size() << "\n";
-        for (auto& i : Assembly->get_classes()) {
+        GHLOG(GH_LOG_DEBUG, GH_TAG) << "Assembly class count: " << Assembly->get_class_count() << "\n";
+        for (auto i : Assembly->get_classes()) {
             if (!i)
                 continue;
-            IL2CPP::IClass* c = (IL2CPP::IClass*)i;
-            GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tAssembly class: \"" << c->get_name() << "\" (" << c->get_field_count() << " fields)\n";
+            GHLOG(GH_LOG_DEBUG, GH_TAG) << "\tAssembly class: \"" << i->get_name() << "\" (" << i->get_field_count() << " fields)\n";
         }
 
         // load plugins
@@ -101,7 +102,6 @@ namespace GolfHook {
 
         GHLOG(GH_LOG_INFO, GH_TAG) << "Shutting down IL2CPP.\n";
         IL2CPP::shutdown();
-        Manager.Cleanup();
 
         // unload plugins
         GHLOG(GH_LOG_NOTICE, GH_TAG) << "Unloading plugins...\n";
