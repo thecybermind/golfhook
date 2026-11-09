@@ -31,6 +31,9 @@ constexpr int ROTATING_BUFFER_SIZE = 1024;
 struct plugin_funcs_impl : public plugin_funcs {
     virtual void WriteGHLog(plugin_id plid, int severity, const char* fmt, ...);
     virtual const char* VarArgs(plugin_id plid [[maybe_unused]], const char* fmt, ...);
+    virtual void* HookIAT(plugin_id plid [[maybe_unused]], void* target_module, const char* dll_name, const char* function_name, void* function_hook);
+    virtual VHook* HookVirtual_New(plugin_id plid);
+    virtual void HookVirtual_Free(plugin_id plid, VHook* vhook);
 } s_plugin_funcs_impl;
 
 static plugin_funcs* s_plugin_funcs = &s_plugin_funcs_impl;
@@ -236,4 +239,22 @@ const char* plugin_funcs_impl::VarArgs(plugin_id plid [[maybe_unused]], const ch
 
     // GHLOG(GH_LOG_TRACE, GH_TAG) << "Plugin \"" << ((plugin_info*)plid)->name << "\" called VarArgs(\"" << format << "\") = \"" << ret << "\"\n";
     return ret;
+}
+
+
+void* plugin_funcs_impl::HookIAT(plugin_id plid [[maybe_unused]], void* target_module, const char* dll_name, const char* function_name, void* function_hook) {
+    void* ret = install_IAT_hook(target_module, dll_name, function_name, function_hook);
+
+    GHLOG(GH_LOG_TRACE, GH_TAG) << "Plugin \"" << ((plugin_info*)plid)->name << "\" called HookIAT(" << target_module  << ", \"" << dll_name << "\", \"" << function_name << "\", " << function_hook << ") = \"" << ret << "\"\n";
+    return ret;
+}
+
+
+VHook* plugin_funcs_impl::HookVirtual_New(plugin_id plid) {
+    return new VHook();
+}
+
+
+void plugin_funcs_impl::HookVirtual_Free(plugin_id plid, VHook* vhook) {
+    delete vhook;
 }

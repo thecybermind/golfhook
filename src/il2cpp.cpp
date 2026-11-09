@@ -88,7 +88,7 @@ namespace IL2CPP {
     IL2CPP_API(class_enum_basetype, void*, (const void* _class));
     IL2CPP_API(class_is_generic, bool, (const void* _class));
     IL2CPP_API(class_is_inflated, bool, (const void* _class));
-    IL2CPP_API(has_parent, bool, (const void* _class, const void* class_c));
+    IL2CPP_API(class_has_parent, bool, (const void* _class, const void* class_c));
     IL2CPP_API(class_get_parent, void*, (const void* _class));
     IL2CPP_API(class_is_subclass_of, bool, (const void* _class, const void* parent__class, bool check_interfaces));
     IL2CPP_API(class_from_il2cpp_type, void*, (const void* type));
@@ -190,7 +190,7 @@ namespace IL2CPP {
         IL2CPP_GET_ADDR(class_enum_basetype, "il2cpp_class_enum_basetype", hGameAssembly);
         IL2CPP_GET_ADDR(class_is_generic, "il2cpp_class_is_generic", hGameAssembly);
         IL2CPP_GET_ADDR(class_is_inflated, "il2cpp_class_is_inflated", hGameAssembly);
-        IL2CPP_GET_ADDR(has_parent, "il2cpp_has_parent", hGameAssembly);
+        IL2CPP_GET_ADDR(class_has_parent, "il2cpp_has_parent", hGameAssembly);
         IL2CPP_GET_ADDR(class_get_parent, "il2cpp_class_get_parent", hGameAssembly);
         IL2CPP_GET_ADDR(class_is_subclass_of, "il2cpp_class_is_subclass_of", hGameAssembly);
         IL2CPP_GET_ADDR(class_from_il2cpp_type, "il2cpp_class_from_il2cpp_type", hGameAssembly);
@@ -219,7 +219,7 @@ namespace IL2CPP {
         IL2CPP_GET_ADDR(method_is_instance, "il2cpp_method_is_instance", hGameAssembly);
         IL2CPP_GET_ADDR(method_get_param_count, "il2cpp_method_get_param_count", hGameAssembly);
         IL2CPP_GET_ADDR(method_get_param_name, "il2cpp_method_get_param_name", hGameAssembly);
-        IL2CPP_GET_ADDR(method_get_param_type, "il2cpp_get_param", hGameAssembly);  // original function name is not descriptive
+        IL2CPP_GET_ADDR(method_get_param_type, "il2cpp_get_param", hGameAssembly);
         IL2CPP_GET_ADDR(method_get_return_type, "il2cpp_method_get_return_type", hGameAssembly);
 
         // fields

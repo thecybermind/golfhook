@@ -14,7 +14,8 @@ Created By:
 #ifndef GOLFHOOK_GHAPI_HPP
 #define GOLFHOOK_GHAPI_HPP
 
-#include "il2cpp.hpp"
+#include "il2cpp.hpp"       // IManager and IImage in plugin_vars
+#include "hook_virtual.hpp" // VHook in plugin_funcs
 
 // plugins and internal use
 #if defined(_WIN32)
@@ -68,12 +69,19 @@ enum {
 
 /* Prototype struct for GolfHook plugin utility functions */
 struct plugin_funcs {
-    virtual void WriteGHLog(plugin_id plid, int severity, const char* fmt, ...) = 0; // Write to the GolfHook log with given severity
-    virtual const char* VarArgs(plugin_id plid, const char* fmt, ...) = 0;           // Simple vsprintf helper with rotating buffer
+    virtual void WriteGHLog(plugin_id plid, int severity, const char* fmt, ...) = 0;    // Write to the GolfHook log with given severity
+    virtual const char* VarArgs(plugin_id plid, const char* fmt, ...) = 0;              // Simple vsprintf helper with rotating buffer
+    virtual void* HookIAT(plugin_id plid, void* target_module, const char* dll_name,
+        const char* function_name, void* function_hook) = 0;                            // Hook IAT/PLT tables for a given function in a target module
+    virtual VHook* HookVirtual_New(plugin_id plid) = 0;                                 // Return a pointer to a VHook object to hook a virtual function
+    virtual void HookVirtual_Free(plugin_id plid, VHook* vhook) = 0;                    // Frees a VHook object returned by HookVirtual
 };
 
-#define GH_WRITEGHLOG(sev, fmt, ...)    (g_pluginfuncs->WriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__)  // Write to the GolfHook log with given severity
-#define GH_VARARGS(fmt, ...)            (g_pluginfuncs->VarArgs)(PLID, fmt, __VA_ARGS__)             // Simple vsprintf helper with rotating buffer
+#define GH_WRITEGHLOG(sev, fmt, ...)        (g_pluginfuncs->WriteGHLog)(PLID, sev, fmt, ## __VA_ARGS__) // Write to the GolfHook log with given severity
+#define GH_VARARGS(fmt, ...)                (g_pluginfuncs->VarArgs)(PLID, fmt, __VA_ARGS__)            // Simple vsprintf helper with rotating buffer
+#define GH_HOOKIAT(target, dll, func, hook) (g_pluginfuncs->HookIAT)(PLID, target, dll, func, hook)     // Hook IAT/PLT tables for a given function in a target module
+#define GH_HOOKVIRTUAL_NEW()                    (g_pluginfuncs->HookVirtual_New)(PLID)                  // Return a pointer to a VHook object to hook a virtual function
+#define GH_HOOKVIRTUAL_FREE(vhook)          (g_pluginfuncs->HookVirtual_Free)(PLID, vhook)              // Frees a VHook object returned by GH_HOOKVIRTUAL
 
 /* Struct of vars for GolfHook plugins */
 typedef struct {

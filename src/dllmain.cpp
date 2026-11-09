@@ -86,6 +86,8 @@ static void* APICONV UnityPlayer_GetProcAddress_hook(void* hModule, const char* 
  * and call UnityMain ourselves, we are able to hook that DLL's IAT for GetProcAddress to hook functions in GameAssembly.dll.
  */
 C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLine, int nCmdShow) {
+    GolfHook::hModule = Util::dll_handle_ptr((void*)&UnityMain);
+
     Util::setup_console();
 
     Log::log_init("golfhook.log", Log::DEFAULT_SEVERITY, Log::DEFAULT_APPEND);
@@ -134,22 +136,3 @@ C_DLLEXPORT int UnityMain(void* hInstance, void* hPrevInstance, wchar_t* lpCmdLi
     // this function doesn't seem to return at all
     return UnityMain_orig(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 }
-
-
-#if defined(_WIN32)
-
-int __stdcall DllMain(void* hModule, unsigned long ul_reason_for_call, void*) {
-    if (ul_reason_for_call == 1)
-        GolfHook::hModule = hModule;
-
-    return 1;
-}
-
-#elif defined(__linux__)    // _WIN32
-
-C_DLLEXPORT void __attribute__((constructor)) DllMain() {
-    GolfHook::hModule = Util::dll_handle_ptr((void*)&DllMain);
-}
-
-#endif // __linux__
-

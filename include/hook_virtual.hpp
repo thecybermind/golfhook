@@ -30,7 +30,6 @@ Created By:
 */
 class VHook {
     private:
-    public:
         void* self;
         void* vtable_orig;
         std::vector<void*> vtable_copy;
@@ -72,7 +71,7 @@ class VHook {
         * @param sz Size of vtable. If left 0, this will be auto-detected.
         * @return true If vtable copy was successful.
         */
-        bool copy_vtable(void* obj, size_t sz = 0) {
+        virtual bool copy_vtable(void* obj, size_t sz = 0) {
             if (obj == nullptr)
                 return false;
 
@@ -99,7 +98,7 @@ class VHook {
         * @param hook_func New function pointer.
         * @return The original function pointer. nullptr if failure.
         */
-        void* set_vtable_index(size_t index, void* hook_func) {
+        virtual void* set_vtable_index(size_t index, void* hook_func) {
             if (!self || !vtable_orig || vtable_copy.empty() || !hook_func || index >= vtable_copy.size())
                 return nullptr;
 
