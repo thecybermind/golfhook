@@ -21,8 +21,6 @@ Created By:
 namespace IL2CPP {
     DLLFunctions dll = {};
 
-    static const void* s_thread = nullptr;
-
     bool initialize() {
         static bool initialized = false;
         if (initialized)
@@ -125,18 +123,11 @@ namespace IL2CPP {
         IL2CPP_GET_ADDR(string_chars, "il2cpp_string_chars", hGameAssembly);
         IL2CPP_GET_ADDR(string_new, "il2cpp_string_new", hGameAssembly);
 
-        // attach to domain thread
-        if (IL2CPP::dll.thread_attach && IL2CPP::dll.domain_get)
-            s_thread = IL2CPP::dll.thread_attach(IL2CPP::dll.domain_get());
-
         initialized = true;
         return true;
     }   // initialize()
 
 
     void shutdown() {
-        // detach from domain thread
-        if (s_thread)
-            IL2CPP::dll.thread_attach(s_thread);
     }
 }   // namespace IL2CPP

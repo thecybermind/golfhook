@@ -18,10 +18,11 @@ Created By:
 #include <string>
 #include <memory>
 
-#include "hook_iat.h"
 #define IL2CPP_INTERNAL     // use internal location of DLL pointer struct
 #include "il2cpp.hpp"
 #undef IL2CPP_INTERNAL
+#include "hook_iat.h"
+
 
 namespace GolfHook {
     extern void* hModule;                               // GolfHook's DLL handle
